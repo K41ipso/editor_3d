@@ -1,22 +1,311 @@
-from PyQt5.QtWidgets import QMenuBar, QAction
+from PyQt5.QtWidgets import QMainWindow, QMenu, QMenuBar, QAction, \
+    QPushButton, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon
+from PyQt5.QtGui import QPixmap, QPalette, QBrush, QIcon, QFont
+from PyQt5.QtCore import Qt
+import os, sys
+from modules.audio import play_sound_effect
 
 
-def setup_main_menu(window):
-    """Настройка главного меню."""
-    print("Настройка главного меню...")
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-    menu_bar = QMenuBar(window)
-    window.setMenuBar(menu_bar)
+        # Установка иконки приложения
+        self.setup_window_icon()
 
-    # Меню "File"
-    file_menu = menu_bar.addMenu("File")
+        # Настройка иконки в трее
+        self.setup_tray_icon()
 
-    save_action = QAction("Save", window)
-    load_action = QAction("Load", window)
-    exit_action = QAction("Exit", window)
-    exit_action.triggered.connect(window.close)
+        # Настройка главного окна
+        self.setWindowTitle("3D Editor")
 
-    file_menu.addAction(save_action)
-    file_menu.addAction(load_action)
-    file_menu.addSeparator()
-    file_menu.addAction(exit_action)
+        # Установка размеров и позиции окна
+        self.set_window_geometry(width_percent=0.8, height_percent=0.7)
+
+        # Установка фонового изображения
+        self.set_background_image("background.png")  # Передаем только имя файла
+
+        # Настройка верхнего меню (отключено)
+        #setup_main_menu(self)
+
+        # Настройка главного меню с большими кнопками
+        self.setup_main_buttons()
+
+        # Обработка события по кнопке "Выход"
+        exit_button = QPushButton("Выход")
+        exit_button.clicked.connect(self.close)
+
+    def setup_window_icon(self):
+        """
+        Настройка иконки главного окна приложения.
+        """
+        try:
+            # Определяем путь к иконке в зависимости от платформы
+            if sys.platform == "win32":  # Для Windows
+                icon_path = os.path.join(os.path.dirname(__file__), "../resources/images/app_icon_win.ico")
+            else:  # Для macOS/Linux
+                icon_path = os.path.join(os.path.dirname(__file__), "../resources/images/app_icon_mac.png")
+
+            # Проверяем существование файла
+            if not os.path.exists(icon_path):
+                raise FileNotFoundError(f"Иконка не найдена по пути {icon_path}")
+
+            # Загружаем иконку
+            icon = QIcon(icon_path)
+            if icon.isNull():
+                raise ValueError(f"Не удалось загрузить иконку из файла {icon_path}")
+
+            # Устанавливаем иконку для главного окна
+            self.setWindowIcon(icon)
+            print("Иконка успешно загружена.")
+
+        except FileNotFoundError as e:
+            print(f"Ошибка: {e}")
+            print("Используется стандартная иконка.")
+            # Можно установить дефолтную иконку, если пользовательская не найдена
+            # Например:
+            # self.setWindowIcon(QIcon(":/default_icon.png"))
+
+        except ValueError as e:
+            print(f"Ошибка: {e}")
+            print("Используется стандартная иконка.")
+            # Можно установить дефолтную иконку, если произошла ошибка загрузки
+            # Например:
+            # self.setWindowIcon(QIcon(":/default_icon.png"))
+
+        except Exception as e:
+            print(f"Неожиданная ошибка при загрузке иконки: {e}")
+            print("Используется стандартная иконка.")
+            # Можно установить дефолтную иконку, если произошла другая ошибка
+            # Например:
+            # self.setWindowIcon(QIcon(":/default_icon.png"))
+
+    def setup_tray_icon(self):
+        """
+        Настройка иконки в системном трее.
+        """
+        try:
+            # Абсолютный путь к иконке
+            icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../resources/images/app_icon_win.ico"))
+
+            # Проверяем существование файла
+            if not os.path.exists(icon_path):
+                raise FileNotFoundError(f"Иконка не найдена по пути {icon_path}")
+
+            # Загружаем иконку
+            icon = QIcon(icon_path)
+            if icon.isNull():
+                raise ValueError("Не удалось загрузить иконку.")
+
+            # Создаем иконку в трее
+            self.tray_icon = QSystemTrayIcon(icon, self)
+            self.tray_icon.show()
+
+            # Создаем контекстное меню для иконки
+            tray_menu = QMenu()
+            exit_action = tray_menu.addAction("Exit")  # Добавляем действие "Exit"
+            exit_action.triggered.connect(self.close)  # При нажатии на "Exit" закрываем приложение
+
+            # Привязываем меню к иконке
+            self.tray_icon.setContextMenu(tray_menu)
+
+            print("Иконка в трее успешно загружена.")
+        except FileNotFoundError as e:
+            print(f"Ошибка: {e}")
+            print("Иконка в трее не будет отображаться.")
+        except ValueError as e:
+            print(f"Ошибка: {e}")
+            print("Иконка в трее не будет отображаться.")
+        except Exception as e:
+            print(f"Неожиданная ошибка при настройке иконки в трее: {e}")
+            print("Иконка в трее не будет отображаться.")
+
+    def set_window_geometry(self, width_percent, height_percent):
+        """
+        Установка размеров и позиции окна в процентах от разрешения экрана.
+        :param width_percent: Процент ширины экрана (например, 0.8 для 80%).
+        :param height_percent: Процент высоты экрана (например, 0.7 для 70%).
+        """
+        # Получение разрешения экрана
+        screen = QApplication.primaryScreen().availableGeometry()
+        screen_width = screen.width()
+        screen_height = screen.height()
+
+        # Размеры окна
+        window_width = int(screen_width * width_percent)
+        window_height = int(screen_height * height_percent)
+
+        # Позиция окна (центр экрана)
+        x = int((screen_width - window_width) / 2)
+        y = int((screen_height - window_height) / 2)
+
+        # Установка геометрии окна
+        self.setGeometry(x, y, window_width, window_height)
+
+    def set_background_image(self, image_name="background.png"):
+        """
+        Установка фонового изображения.
+        :param image_name: Имя файла фонового изображения (по умолчанию "background.png").
+        """
+        try:
+            # Формируем путь к изображению
+            image_path = os.path.join(os.path.dirname(__file__), "../resources/images", image_name)
+
+            # Проверяем существование файла
+            if not os.path.exists(image_path):
+                raise FileNotFoundError(f"Фоновое изображение не найдено по пути {image_path}")
+
+            # Загружаем изображение
+            pixmap = QPixmap(image_path)
+            if pixmap.isNull():
+                raise ValueError(f"Не удалось загрузить фоновое изображение из файла {image_path}")
+
+            # Устанавливаем фоновое изображение
+            palette = QPalette()
+            palette.setBrush(QPalette.Window, QBrush(pixmap))
+            self.setPalette(palette)
+            print("Фоновое изображение успешно загружено.")
+
+        except FileNotFoundError as e:
+            print(f"Ошибка: {e}")
+            print("Фоновое изображение не будет установлено.")
+
+        except ValueError as e:
+            print(f"Ошибка: {e}")
+            print("Фоновое изображение не будет установлено.")
+
+        except Exception as e:
+            print(f"Неожиданная ошибка при загрузке фонового изображения: {e}")
+            print("Фоновое изображение не будет установлено.")
+
+    def resizeEvent(self, event):
+        """
+        Обработка события изменения размера окна.
+        Пересчитываем размеры кнопок и текста при изменении размера окна.
+        """
+        self.update_button_sizes()
+        super().resizeEvent(event)
+
+    def update_button_sizes(self):
+        """
+        Обновление размеров кнопок и текста в зависимости от размера окна.
+        """
+        width = self.width()
+        height = self.height()
+
+        # Размер кнопок (50% ширины окна, высота 10% от высоты окна)
+        button_width = int(width * 0.5)
+        button_height = int(height * 0.08)
+
+        # Размер шрифта (пропорционально высоте окна)
+        font_size = max(12, int(height * 0.04))  # Минимальный размер шрифта: 12
+
+        # Обновляем размеры и стиль всех кнопок
+        for button in self.findChildren(QPushButton):
+            button.setFixedSize(button_width, button_height)
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: #404040;  /* Серый фон */
+                    color: white;               /* Белый текст */
+                    font-size: {font_size}px;   /* Размер шрифта */
+                    border-radius: 10px;        /* Закругленные углы */
+                    text-align: center;         /* Центрирование текста */
+                }}
+                QPushButton:hover {{
+                    background-color: #303030;  /* Темнее при наведении */
+                }}
+                QPushButton:pressed {{
+                    background-color: #202020;  /* Очень темный фон при нажатии */
+                    color: gray;               /* Серый текст при нажатии */
+                }}
+            """)
+
+    def keyPressEvent(self, event):
+        """
+        Обработка нажатия клавиш.
+        Переключение полноэкранного режима при нажатии F11.
+        """
+        if event.key() == Qt.Key_F11:  # Переключение полноэкранного режима при нажатии F11
+            if self.isFullScreen():
+                self.showNormal()  # Возвращение в обычный режим
+            else:
+                self.showFullScreen()  # Переключение на полноэкранный режим
+
+    def setup_main_buttons(self):
+        """Настройка главного меню с большими кнопками."""
+        # Создание центрального виджета
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        # Создание вертикального макета
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignCenter)  # Центрирование кнопок
+        layout.setSpacing(15)  # Расстояние между кнопками
+
+        # Список кнопок с их действиями
+        buttons_data = [
+            ("Продолжить редактирование", self.continue_editing),
+            ("Новое пространство", self.create_new_space),
+            ("Загрузить пространство", self.load_space),
+            ("Настройки", self.open_settings),
+            ("Выход", self.close),  # Кнопка "Выход" связана с методом close
+        ]
+
+        # Добавление кнопок
+        for text, action in buttons_data:
+            button = QPushButton(text)
+            button.clicked.connect(self.create_button_handler(action))  # Подключение универсального обработчика
+            layout.addWidget(button)
+
+        # Установка макета
+        central_widget.setLayout(layout)
+
+        # Инициализация размеров кнопок
+        self.update_button_sizes()
+
+    def create_button_handler(self, action):
+        """
+        Создает обработчик для кнопки, который воспроизводит звук и выполняет основное действие.
+        :param action: Основное действие кнопки.
+        :return: Функция-обработчик.
+        """
+
+        def handler():
+            # Воспроизведение звука нажатия
+            play_sound_effect("resources/sounds/pm_button_click.mp3")
+            # Выполнение основного действия
+            action()
+
+        return handler
+
+    def continue_editing(self):
+        print("Продолжение редактирования...")
+
+    def create_new_space(self):
+        print("Создание нового пространства...")
+
+    def load_space(self):
+        print("Загрузка пространства...")
+
+    def open_settings(self):
+        print("Открытие настроек...")
+
+# def setup_main_menu(window):
+#     """Настройка верхнего меню (маленькие кнопки)."""
+#     print("Настройка верхнего меню...")
+#
+#     menu_bar = QMenuBar(window)
+#     window.setMenuBar(menu_bar)
+#
+#     # Меню "File"
+#     file_menu = menu_bar.addMenu("File")
+#
+#     save_action = QAction("Save", window)
+#     load_action = QAction("Load", window)
+#     exit_action = QAction("Exit", window)
+#     exit_action.triggered.connect(window.close)
+#
+#     file_menu.addAction(save_action)
+#     file_menu.addAction(load_action)
+#     file_menu.addSeparator()
+#     file_menu.addAction(exit_action)
