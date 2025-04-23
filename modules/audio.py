@@ -1,4 +1,5 @@
-import pygame
+import pygame.mixer
+import os
 
 
 def play_background_music(music_path, volume=1.0):
@@ -8,20 +9,50 @@ def play_background_music(music_path, volume=1.0):
     :param volume: Громкость (от 0.0 до 1.0).
     """
     try:
-        pygame.mixer.init()
-        pygame.mixer.music.load(music_path)
+        # Инициализация только модуля mixer
+        if not pygame.mixer.get_init():
+            pygame.mixer.init()
+
+        # Формируем абсолютный путь к файлу
+        abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../resources/sounds", music_path))
+
+        # Проверяем существование файла
+        if not os.path.exists(abs_path):
+            raise FileNotFoundError(f"Файл музыки не найден по пути {abs_path}")
+
+        # Загружаем и воспроизводим музыку
+        pygame.mixer.music.load(abs_path)
         pygame.mixer.music.set_volume(volume)  # Установка громкости
         pygame.mixer.music.play(-1)  # Бесконечное воспроизведение
-        print(f"Фоновая музыка успешно загружена: {music_path}, громкость: {volume * 100}%")
+        print(f"Фоновая музыка успешно загружена: {abs_path}, громкость: {volume * 100}%")
+    except FileNotFoundError as e:
+        print(f"Ошибка: {e}")
     except Exception as e:
-        print(f"Ошибка при воспроизведении фоновой музыки: {e}")
+        print(f"Неожиданная ошибка при воспроизведении фоновой музыки: {e}")
 
 
 def play_sound_effect(sound_path):
-    """Воспроизведение звукового эффекта."""
+    """
+    Воспроизведение звукового эффекта.
+    :param sound_path: Путь к звуковому файлу.
+    """
     try:
-        sound = pygame.mixer.Sound(sound_path)  # Загрузка звукового эффекта
-        sound.play()  # Воспроизведение звука
-        print(f"Звуковой эффект успешно загружен: {sound_path}")
+        # Инициализация только модуля mixer
+        if not pygame.mixer.get_init():
+            pygame.mixer.init()
+
+        # Формируем абсолютный путь к файлу
+        abs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../resources/sounds", sound_path))
+
+        # Проверяем существование файла
+        if not os.path.exists(abs_path):
+            raise FileNotFoundError(f"Звуковой файл не найден по пути {abs_path}")
+
+        # Загружаем и воспроизводим звук
+        sound = pygame.mixer.Sound(abs_path)
+        sound.play()
+        print(f"Звуковой эффект успешно загружен: {abs_path}")
+    except FileNotFoundError as e:
+        print(f"Ошибка: {e}")
     except Exception as e:
-        print(f"Ошибка при воспроизведении звукового эффекта: {e}")
+        print(f"Неожиданная ошибка при воспроизведении звука: {e}")

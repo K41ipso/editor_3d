@@ -3,7 +3,9 @@ from PyQt5.QtWidgets import QMainWindow, QMenu, QMenuBar, QAction, \
 from PyQt5.QtGui import QPixmap, QPalette, QBrush, QIcon, QFont
 from PyQt5.QtCore import Qt
 import os, sys
-from modules.audio import play_sound_effect
+from modules.audio import play_background_music, play_sound_effect
+from modules.actions import *
+
 
 
 class MainWindow(QMainWindow):
@@ -34,6 +36,9 @@ class MainWindow(QMainWindow):
         # Обработка события по кнопке "Выход"
         exit_button = QPushButton("Выход")
         exit_button.clicked.connect(self.close)
+
+        # Воспроизведение фоновой музыки
+        play_background_music("menu_music_e1m1.mp3", volume=0.3)
 
     def setup_window_icon(self):
         """
@@ -244,11 +249,11 @@ class MainWindow(QMainWindow):
 
         # Список кнопок с их действиями
         buttons_data = [
-            ("Продолжить редактирование", self.continue_editing),
-            ("Новое пространство", self.create_new_space),
-            ("Загрузить пространство", self.load_space),
-            ("Настройки", self.open_settings),
-            ("Выход", self.close),  # Кнопка "Выход" связана с методом close
+            ("Продолжить редактирование", lambda: self.continue_editing()),
+            ("Новое пространство", lambda: self.create_new_space(self)),
+            ("Загрузить пространство", lambda: self.load_space()),
+            ("Настройки", lambda: self.open_settings()),
+            ("Выход", self.close),
         ]
 
         # Добавление кнопок
@@ -272,7 +277,7 @@ class MainWindow(QMainWindow):
 
         def handler():
             # Воспроизведение звука нажатия
-            play_sound_effect("resources/sounds/pm_button_click.mp3")
+            play_sound_effect("pm_button_click.mp3")
             # Выполнение основного действия
             action()
 
@@ -280,32 +285,60 @@ class MainWindow(QMainWindow):
 
     def continue_editing(self):
         print("Продолжение редактирования...")
+        continue_last_session()
 
     def create_new_space(self):
         print("Создание нового пространства...")
+        create_new_space()
 
     def load_space(self):
         print("Загрузка пространства...")
+        load_saved_space()
 
     def open_settings(self):
         print("Открытие настроек...")
 
-# def setup_main_menu(window):
-#     """Настройка верхнего меню (маленькие кнопки)."""
-#     print("Настройка верхнего меню...")
-#
-#     menu_bar = QMenuBar(window)
-#     window.setMenuBar(menu_bar)
-#
-#     # Меню "File"
-#     file_menu = menu_bar.addMenu("File")
-#
-#     save_action = QAction("Save", window)
-#     load_action = QAction("Load", window)
-#     exit_action = QAction("Exit", window)
-#     exit_action.triggered.connect(window.close)
-#
-#     file_menu.addAction(save_action)
-#     file_menu.addAction(load_action)
-#     file_menu.addSeparator()
-#     file_menu.addAction(exit_action)
+    def setup_main_menu(self):
+        """
+        Настройка верхнего меню (маленькие кнопки).
+        """
+        # Удаляем существующее меню, если оно есть
+        if hasattr(self, "menuBar"):
+            self.menuBar().clear()
+
+        # Создаем новую панель меню
+        menu_bar = self.menuBar()
+
+        # Меню "File"
+        file_menu = menu_bar.addMenu("File")
+
+        save_action = QAction("Save", self)
+        load_action = QAction("Load", self)
+        exit_action = QAction("Exit", self)
+
+        save_action.triggered.connect(self.save_current_space)
+        load_action.triggered.connect(self.load_saved_space)
+        exit_action.triggered.connect(self.close)
+
+        file_menu.addAction(save_action)
+        file_menu.addAction(load_action)
+        file_menu.addSeparator()
+        file_menu.addAction(exit_action)
+
+        print("Верхнее меню успешно создано.")
+
+    def remove_main_menu(self):
+        """
+        Удаляет верхнее меню.
+        """
+        if hasattr(self, "menuBar"):
+            self.menuBar().clear()
+            print("Верхнее меню успешно удалено.")
+
+    def return_to_main_menu(self):
+        """
+        Возвращает пользователя в главное меню.
+        """
+        self.remove_main_menu()  # Удаляем верхнее меню
+        self.setup_main_buttons()  # Восстанавливаем главное меню с большими кнопками
+        print("Возвращение в главное меню.")
