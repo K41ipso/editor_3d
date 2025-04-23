@@ -1,5 +1,6 @@
 from PyQt5.QtCore import QThread
 from modules.engine.core import Engine
+from modules.engine.opengl_widget import OpenGLWidget
 
 
 class SpaceCreationThread(QThread):
@@ -30,16 +31,35 @@ def create_new_space(main_window):
     :param main_window: Экземпляр MainWindow.
     """
     engine = Engine()
+    engine.initialize_empty_space(dimensions=(10, 10, 10))
+    print("Новое пространство создано.")
+
+    # Сохраняем состояние в файл
     save_path = "saves/new_space.json"
+    engine.save_space(save_path)
+    print(f"Состояние сохранено в {save_path}.")
 
-    # Создаем поток для долгих операций
-    thread = SpaceCreationThread(engine, dimensions=(10, 10, 10), save_path=save_path)
+    # Удаляем старый виджет
+    old_widget = main_window.centralWidget()
+    if old_widget:
+        old_widget.deleteLater()
 
-    # Подключаем обработчик завершения потока
-    thread.finished.connect(lambda: on_space_created(main_window, engine.get_space()))
+    # Заменяем главное меню на OpenGL-виджет
+    print("Инициализация OpenGL...")
+    renderer = OpenGLWidget(engine.get_space())
+    print("OpenGL инициализирован.")
+    main_window.setCentralWidget(renderer)
+    print('setCentralWidget закончил свою работу.')
 
-    # Запускаем поток
-    thread.start()
+    # Добавляем верхнее меню
+    try:
+        main_window.setup_main_menu()
+    except AttributeError:
+        print("Ошибка: Метод setup_main_menu не найден в классе MainWindow.")
+    except Exception as e:
+        print(f"Неожиданная ошибка при настройке верхнего меню: {e}")
+
+    print("Пространство отображено.")
 
 
 def on_space_created(main_window, space_data):

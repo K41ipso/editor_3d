@@ -5,12 +5,14 @@ from PyQt5.QtCore import Qt
 import os, sys
 from modules.audio import play_background_music, play_sound_effect
 from modules.actions import *
+from  modules.engine import Engine, OpenGLWidget
 
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.engine = Engine()  # Создаем экземпляр движка
 
         # Установка иконки приложения
         self.setup_window_icon()
@@ -27,8 +29,8 @@ class MainWindow(QMainWindow):
         # Установка фонового изображения
         self.set_background_image("background.png")  # Передаем только имя файла
 
-        # Настройка верхнего меню (отключено)
-        #setup_main_menu(self)
+        # Настройка верхнего меню
+        self.setup_main_menu()
 
         # Настройка главного меню с большими кнопками
         self.setup_main_buttons()
@@ -229,12 +231,15 @@ class MainWindow(QMainWindow):
         """
         Обработка нажатия клавиш.
         Переключение полноэкранного режима при нажатии F11.
+        Возврат в главное меню при нажатии Esc.
         """
         if event.key() == Qt.Key_F11:  # Переключение полноэкранного режима при нажатии F11
             if self.isFullScreen():
                 self.showNormal()  # Возвращение в обычный режим
             else:
                 self.showFullScreen()  # Переключение на полноэкранный режим
+        elif event.key() == Qt.Key_Escape:  # Возврат в главное меню при нажатии Esc
+            self.return_to_main_menu()
 
     def setup_main_buttons(self):
         """Настройка главного меню с большими кнопками."""
@@ -250,7 +255,7 @@ class MainWindow(QMainWindow):
         # Список кнопок с их действиями
         buttons_data = [
             ("Продолжить редактирование", lambda: self.continue_editing()),
-            ("Новое пространство", lambda: self.create_new_space(self)),
+            ("Новое пространство", lambda: self.create_new_space()),
             ("Загрузить пространство", lambda: self.load_space()),
             ("Настройки", lambda: self.open_settings()),
             ("Выход", self.close),
@@ -289,7 +294,7 @@ class MainWindow(QMainWindow):
 
     def create_new_space(self):
         print("Создание нового пространства...")
-        create_new_space()
+        create_new_space(self)
 
     def load_space(self):
         print("Загрузка пространства...")
@@ -303,29 +308,64 @@ class MainWindow(QMainWindow):
         Настройка верхнего меню (маленькие кнопки).
         """
         # Удаляем существующее меню, если оно есть
-        if hasattr(self, "menuBar"):
+        if hasattr(self, "menuBar") and self.menuBar():
             self.menuBar().clear()
 
         # Создаем новую панель меню
         menu_bar = self.menuBar()
-
         # Меню "File"
         file_menu = menu_bar.addMenu("File")
-
         save_action = QAction("Save", self)
         load_action = QAction("Load", self)
         exit_action = QAction("Exit", self)
-
         save_action.triggered.connect(self.save_current_space)
         load_action.triggered.connect(self.load_saved_space)
         exit_action.triggered.connect(self.close)
-
         file_menu.addAction(save_action)
         file_menu.addAction(load_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
-
         print("Верхнее меню успешно создано.")
+
+    def save_current_space(self):
+        """
+        Сохраняет текущее состояние пространства.
+        """
+        try:
+            save_path = "saves/current_space.json"
+            self.engine.save_space(file_path=save_path)
+            print(f"Текущее пространство успешно сохранено в {save_path}.")
+        except Exception as e:
+            print(f"Ошибка при сохранении пространства: {e}")
+
+    def load_saved_space(self):
+        """
+        Загружает последнее сохраненное состояние пространства.
+        """
+        try:
+            save_path = "saves/current_space.json"
+            self.engine.load_space(file_path=save_path)
+            print(f"Пространство успешно загружено из {save_path}.")
+            self.update_opengl_widget()  # Обновляем OpenGL-виджет после загрузки
+        except Exception as e:
+            print(f"Ошибка при загрузке пространства: {e}")
+
+    def update_opengl_widget(self):
+        """
+        Обновляет OpenGL-виджет после загрузки нового пространства.
+        """
+        try:
+            # Удаляем старый виджет
+            old_widget = self.centralWidget()
+            if old_widget:
+                old_widget.deleteLater()
+
+            # Создаем новый OpenGL-виджет с загруженным пространством
+            renderer = OpenGLWidget(self.engine.get_space())
+            self.setCentralWidget(renderer)
+            print("OpenGL-виджет успешно обновлен.")
+        except Exception as e:
+            print(f"Ошибка при обновлении OpenGL-виджета: {e}")
 
     def remove_main_menu(self):
         """

@@ -13,7 +13,7 @@ class Engine:
         Инициализация движка.
         """
         self.space = None  # Текущее состояние пространства
-        self.state_file = "saves/temp_state.json"  # Путь к промежуточному файлу состояния
+        self.state_file = "saves/current_space.json"  # Путь к файлу состояния
         print("Движок инициализирован.")
 
     def initialize_empty_space(self, dimensions=(10, 10, 10)):
@@ -68,6 +68,7 @@ class Engine:
 
             # Сохраняем данные в файл
             save_state(self.space, file_path)
+            print(f"Пространство успешно сохранено в {file_path}.")
         except Exception as e:
             print(f"Ошибка при сохранении пространства: {e}")
 
@@ -83,6 +84,8 @@ class Engine:
                 print(f"Пространство успешно загружено из {file_path}.")
             else:
                 print("Не удалось загрузить пространство.")
+        except FileNotFoundError:
+            print(f"Файл {file_path} не найден.")
         except Exception as e:
             print(f"Ошибка при загрузке пространства: {e}")
 
