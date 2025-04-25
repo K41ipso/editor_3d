@@ -17,6 +17,8 @@ class Engine:
         """
         self.space: Any = None  # Текущее состояние пространства
         self.state_file = "saves/current_space.json"  # Путь к файлу состояния
+        self.initialize_empty_space_called = False
+        self.load_space_called = False
         print("Движок инициализирован.")
 
     def initialize_empty_space(self, dimensions: tuple[int, int, int] = (10, 10, 10)) -> None:
@@ -26,6 +28,7 @@ class Engine:
         """
         try:
             self.space = np.zeros(dimensions, dtype=int)  # Пустое пространство (массив нулей)
+            self.initialize_empty_space_called = True
             print(f"Создано новое пространство размером {dimensions}.")
         except Exception as e:
             print(f"Ошибка при создании пространства: {e}")
@@ -84,6 +87,7 @@ class Engine:
             file_path = file_path or self.state_file
             self.space = load_state(file_path)
             if self.space is not None:
+                self.load_space_called = True
                 print(f"Пространство успешно загружено из {file_path}.")
             else:
                 print("Не удалось загрузить пространство.")

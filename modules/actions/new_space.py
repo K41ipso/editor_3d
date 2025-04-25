@@ -28,7 +28,7 @@ class SpaceCreationThread(QThread):
         self.engine.save_space(self.save_path)
 
 
-def create_new_space(main_window: Any) -> None:
+def create_new_space(main_window: Any = None) -> None:
     """
     Создает новое пространство, сохраняет его состояние и отображает его.
     :param main_window: Экземпляр MainWindow.
@@ -37,32 +37,37 @@ def create_new_space(main_window: Any) -> None:
     engine.initialize_empty_space(dimensions=(10, 10, 10))
     print("Новое пространство создано.")
 
+
     # Сохраняем состояние в файл
     save_path = "saves/new_space.json"
     engine.save_space(save_path)
     print(f"Состояние сохранено в {save_path}.")
 
-    # Удаляем старый виджет
-    old_widget = main_window.centralWidget()
-    if old_widget:
-        old_widget.deleteLater()
+    # Проверяем, что main_window передан
+    if main_window is not None:
+        # Удаляем старый виджет
+        old_widget = main_window.centralWidget()
+        if old_widget:
+            old_widget.deleteLater()
 
-    # Заменяем главное меню на OpenGL-виджет
-    print("Инициализация OpenGL...")
-    renderer = OpenGLWidget(engine.get_space())
-    print("OpenGL инициализирован.")
-    main_window.setCentralWidget(renderer)
-    print('setCentralWidget закончил свою работу.')
+        # Заменяем главное меню на OpenGL-виджет
+        print("Инициализация OpenGL...")
+        renderer = OpenGLWidget(engine.get_space())
+        print("OpenGL инициализирован.")
+        main_window.setCentralWidget(renderer)
+        print('setCentralWidget закончил свою работу.')
 
-    # Добавляем верхнее меню
-    try:
-        main_window.setup_main_menu()
-    except AttributeError:
-        print("Ошибка: Метод setup_main_menu не найден в классе MainWindow.")
-    except Exception as e:
-        print(f"Неожиданная ошибка при настройке верхнего меню: {e}")
+        # Добавляем верхнее меню
+        try:
+            main_window.setup_main_menu()
+        except AttributeError:
+            print("Ошибка: Метод setup_main_menu не найден в классе MainWindow.")
+        except Exception as e:
+            print(f"Неожиданная ошибка при настройке верхнего меню: {e}")
 
-    print("Пространство отображено.")
+        print("Пространство отображено.")
+    else:
+        print("Параметр main_window не передан. Пространство создано без GUI.")
 
 
 def on_space_created(main_window: Any, space_data: Any) -> None:

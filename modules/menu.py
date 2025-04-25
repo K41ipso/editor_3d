@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
         exit_button.clicked.connect(self.close)  # type: ignore[attr-defined]
 
         # Воспроизведение фоновой музыки
-        play_background_music("menu_music_e1m1.mp3", volume=0)
+        play_background_music("menu_music_e1m1.mp3", volume=0.3)
 
     def setup_window_icon(self) -> None:
         """
@@ -60,9 +60,25 @@ class MainWindow(QMainWindow):
         try:
             # Определяем путь к иконке в зависимости от платформы
             if sys.platform == "win32":  # Для Windows
-                icon_path = os.path.join(os.path.dirname(__file__), "../resources/images/app_icon_win.ico")
+                icon_path = os.path.normpath(
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        "..",
+                        "resources",
+                        "images",
+                        "app_icon_win.ico"
+                    )
+                )
             else:  # Для macOS/Linux
-                icon_path = os.path.join(os.path.dirname(__file__), "../resources/images/app_icon_mac.png")
+                icon_path = (
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        "..",
+                        "resources",
+                        "images",
+                        "app_icon_mac.png"
+                    )
+                )
 
             # Проверяем существование файла
             if not os.path.exists(icon_path):
@@ -167,7 +183,16 @@ class MainWindow(QMainWindow):
         """
         try:
             # Формируем путь к изображению
-            image_path = os.path.join(os.path.dirname(__file__), "../resources/images", image_name)
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            image_path = os.path.normpath(
+                os.path.join(
+                    script_dir,
+                    "..",
+                    "resources",
+                    "images",
+                    image_name
+                )
+            )
 
             # Проверяем существование файла
             if not os.path.exists(image_path):
