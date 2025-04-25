@@ -1,6 +1,7 @@
 from modules.engine.core import Engine
 
-def continue_last_session():
+
+def continue_last_session() -> None:
     """
     Продолжает работу с последним сохранением.
     """

@@ -1,6 +1,9 @@
 import os
+from typing import Any
+
 import numpy as np
-from .loader import save_state, load_state, load_last_session
+
+from .loader import load_last_session, load_state, save_state
 
 
 class Engine:
@@ -8,15 +11,15 @@ class Engine:
     Основной класс движка, управляющий состоянием пространства.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Инициализация движка.
         """
-        self.space = None  # Текущее состояние пространства
+        self.space: Any = None  # Текущее состояние пространства
         self.state_file = "saves/current_space.json"  # Путь к файлу состояния
         print("Движок инициализирован.")
 
-    def initialize_empty_space(self, dimensions=(10, 10, 10)):
+    def initialize_empty_space(self, dimensions: tuple[int, int, int] = (10, 10, 10)) -> None:
         """
         Создает пустое пространство заданных размеров.
         :param dimensions: Размеры пространства (x, y, z).
@@ -27,7 +30,7 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при создании пространства: {e}")
 
-    def update_space(self, position, value):
+    def update_space(self, position: Any, value: int) -> None:
         """
         Обновляет значение в определенной позиции пространства.
         :param position: Координаты (x, y, z).
@@ -43,7 +46,7 @@ class Engine:
         except Exception as e:
             print(f"Неожиданная ошибка при обновлении пространства: {e}")
 
-    def clear_space(self):
+    def clear_space(self) -> None:
         """
         Очищает текущее пространство.
         """
@@ -53,7 +56,7 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при очистке пространства: {e}")
 
-    def save_space(self, file_path=None):
+    def save_space(self, file_path: str | None = None) -> None:
         """
         Сохраняет текущее состояние пространства.
         :param file_path: Путь к файлу (если не указан, используется self.state_file).
@@ -72,7 +75,7 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при сохранении пространства: {e}")
 
-    def load_space(self, file_path=None):
+    def load_space(self, file_path: str | None = None) -> None:
         """
         Загружает состояние пространства.
         :param file_path: Путь к файлу (если не указан, используется self.state_file).
@@ -89,7 +92,7 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при загрузке пространства: {e}")
 
-    def continue_last_session(self):
+    def continue_last_session(self) -> None:
         """
         Продолжает работу с последним сохранением.
         """
@@ -102,7 +105,7 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при продолжении последней сессии: {e}")
 
-    def get_space(self):
+    def get_space(self) -> Any:
         """
         Возвращает текущее состояние пространства.
         :return: Текущее пространство (NumPy массив).

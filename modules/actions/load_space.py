@@ -1,7 +1,10 @@
+from typing import Any
+
 from modules.engine.core import Engine
 from modules.engine.opengl_widget import OpenGLWidget
 
-def load_saved_space(main_window):
+
+def load_saved_space(main_window: Any) -> None:
     """
     Загружает сохраненное пространство и отображает его.
     :param main_window: Экземпляр MainWindow.

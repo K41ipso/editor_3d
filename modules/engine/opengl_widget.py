@@ -1,25 +1,47 @@
+from typing import Any
+
+from OpenGL.GL import (
+    GL_COLOR_BUFFER_BIT,
+    GL_DEPTH_BUFFER_BIT,
+    GL_DEPTH_TEST,
+    GL_LINES,
+    GL_MODELVIEW,
+    GL_PROJECTION,
+    GL_QUADS,
+    glBegin,
+    glClear,
+    glClearColor,
+    glColor3f,
+    glEnable,
+    glEnd,
+    glLoadIdentity,
+    glMatrixMode,
+    glRotatef,
+    glTranslatef,
+    glVertex3f,
+    glViewport,
+)
+from OpenGL.GLU import gluPerspective
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QOpenGLWidget
-from OpenGL.GL import *
-from OpenGL.GLU import *
 
 
 class OpenGLWidget(QOpenGLWidget):
-    def __init__(self, space_data=None, parent=None):
+    def __init__(self, space_data: Any = None, parent: Any = None) -> None:
         super().__init__(parent)
         self.space_data = space_data
         self.rotation_x = 0  # Угол поворота по оси X
         self.rotation_y = 0  # Угол поворота по оси Y
         self.last_mouse_pos = None  # Последняя позиция мыши
 
-    def initializeGL(self):
+    def initializeGL(self) -> None:
         """
         Инициализация OpenGL.
         """
         glClearColor(0.1, 0.1, 0.1, 1.0)  # Темно-серый фон
         glEnable(GL_DEPTH_TEST)
 
-    def resizeGL(self, width, height):
+    def resizeGL(self, width: int, height: int) -> None:
         """
         Настройка проекции при изменении размеров окна.
         """
@@ -29,7 +51,7 @@ class OpenGLWidget(QOpenGLWidget):
         gluPerspective(45, width / height, 0.1, 50.0)
         glMatrixMode(GL_MODELVIEW)
 
-    def paintGL(self):
+    def paintGL(self) -> None:
         """
         Отрисовка OpenGL.
         """
@@ -45,7 +67,7 @@ class OpenGLWidget(QOpenGLWidget):
         # Рисуем куб (пример примитивного объекта)
         self.draw_cube()
 
-    def draw_cube(self):
+    def draw_cube(self) -> None:
         """
         Рисует куб (пример примитивного объекта).
         """
@@ -63,7 +85,7 @@ class OpenGLWidget(QOpenGLWidget):
         glVertex3f(1.0, -1.0, -1.0)
         glEnd()
 
-    def draw_coordinate_grid(self):
+    def draw_coordinate_grid(self) -> None:
         """
         Рисует координатную сетку.
         """
@@ -95,26 +117,26 @@ class OpenGLWidget(QOpenGLWidget):
         except Exception as e:
             print(f"Неожиданная ошибка при рисовании координатной сетки: {e}")
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: Any) -> None:
         """
         Обработка нажатия кнопки мыши.
         """
         if event.button() == Qt.LeftButton:
             self.last_mouse_pos = event.pos()
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: Any) -> None:
         """
         Обработка движения мыши.
         """
         if self.last_mouse_pos is not None:
-            dx = event.x() - self.last_mouse_pos.x()
+            dx = event.x() - self.last_mouse_pos.x()  # type: ignore
             dy = event.y() - self.last_mouse_pos.y()
             self.rotation_x += dy  # Изменяем угол поворота по оси X
             self.rotation_y += dx  # Изменяем угол поворота по оси Y
             self.last_mouse_pos = event.pos()
             self.update()  # Перерисовываем виджет
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: Any) -> None:
         """
         Обработка отпускания кнопки мыши.
         """

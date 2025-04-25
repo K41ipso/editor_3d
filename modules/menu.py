@@ -1,16 +1,27 @@
-from PyQt5.QtWidgets import QMainWindow, QMenu, QMenuBar, QAction, \
-    QPushButton, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon
-from PyQt5.QtGui import QPixmap, QPalette, QBrush, QIcon, QFont
-from PyQt5.QtCore import Qt
-import os, sys
-from modules.audio import play_background_music, play_sound_effect
-from modules.actions import *
-from  modules.engine import Engine, OpenGLWidget
+import os
+import sys
+from typing import Any
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QBrush, QIcon, QPalette, QPixmap
+from PyQt5.QtWidgets import (
+    QAction,
+    QApplication,
+    QMainWindow,
+    QMenu,
+    QPushButton,
+    QSystemTrayIcon,
+    QVBoxLayout,
+    QWidget,
+)
+
+from modules.actions import continue_last_session, create_new_space
+from modules.audio import play_background_music, play_sound_effect
+from modules.engine import Engine, OpenGLWidget
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.engine = Engine()  # Создаем экземпляр движка
 
@@ -37,12 +48,12 @@ class MainWindow(QMainWindow):
 
         # Обработка события по кнопке "Выход"
         exit_button = QPushButton("Выход")
-        exit_button.clicked.connect(self.close)
+        exit_button.clicked.connect(self.close)  # type: ignore[attr-defined]
 
         # Воспроизведение фоновой музыки
-        play_background_music("menu_music_e1m1.mp3", volume=0.3)
+        play_background_music("menu_music_e1m1.mp3", volume=0)
 
-    def setup_window_icon(self):
+    def setup_window_icon(self) -> None:
         """
         Настройка иконки главного окна приложения.
         """
@@ -87,7 +98,7 @@ class MainWindow(QMainWindow):
             # Например:
             # self.setWindowIcon(QIcon(":/default_icon.png"))
 
-    def setup_tray_icon(self):
+    def setup_tray_icon(self) -> None:
         """
         Настройка иконки в системном трее.
         """
@@ -127,7 +138,7 @@ class MainWindow(QMainWindow):
             print(f"Неожиданная ошибка при настройке иконки в трее: {e}")
             print("Иконка в трее не будет отображаться.")
 
-    def set_window_geometry(self, width_percent, height_percent):
+    def set_window_geometry(self, width_percent: float, height_percent: float) -> None:
         """
         Установка размеров и позиции окна в процентах от разрешения экрана.
         :param width_percent: Процент ширины экрана (например, 0.8 для 80%).
@@ -149,7 +160,7 @@ class MainWindow(QMainWindow):
         # Установка геометрии окна
         self.setGeometry(x, y, window_width, window_height)
 
-    def set_background_image(self, image_name="background.png"):
+    def set_background_image(self, image_name: str = "background.png") -> None:
         """
         Установка фонового изображения.
         :param image_name: Имя файла фонового изображения (по умолчанию "background.png").
@@ -185,15 +196,15 @@ class MainWindow(QMainWindow):
             print(f"Неожиданная ошибка при загрузке фонового изображения: {e}")
             print("Фоновое изображение не будет установлено.")
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: Any) -> None:
         """
         Обработка события изменения размера окна.
         Пересчитываем размеры кнопок и текста при изменении размера окна.
         """
         self.update_button_sizes()
-        super().resizeEvent(event)
+        super().resizeEvent(event)  # type: ignore
 
-    def update_button_sizes(self):
+    def update_button_sizes(self) -> None:
         """
         Обновление размеров кнопок и текста в зависимости от размера окна.
         """
@@ -210,7 +221,8 @@ class MainWindow(QMainWindow):
         # Обновляем размеры и стиль всех кнопок
         for button in self.findChildren(QPushButton):
             button.setFixedSize(button_width, button_height)
-            button.setStyleSheet(f"""
+            button.setStyleSheet(
+                f"""
                 QPushButton {{
                     background-color: #404040;  /* Серый фон */
                     color: white;               /* Белый текст */
@@ -225,9 +237,10 @@ class MainWindow(QMainWindow):
                     background-color: #202020;  /* Очень темный фон при нажатии */
                     color: gray;               /* Серый текст при нажатии */
                 }}
-            """)
+            """
+            )
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: Any) -> None:
         """
         Обработка нажатия клавиш.
         Переключение полноэкранного режима при нажатии F11.
@@ -241,7 +254,7 @@ class MainWindow(QMainWindow):
         elif event.key() == Qt.Key_Escape:  # Возврат в главное меню при нажатии Esc
             self.return_to_main_menu()
 
-    def setup_main_buttons(self):
+    def setup_main_buttons(self) -> None:
         """Настройка главного меню с большими кнопками."""
         # Создание центрального виджета
         central_widget = QWidget()
@@ -264,7 +277,8 @@ class MainWindow(QMainWindow):
         # Добавление кнопок
         for text, action in buttons_data:
             button = QPushButton(text)
-            button.clicked.connect(self.create_button_handler(action))  # Подключение универсального обработчика
+            # Подключение универсального обработчика
+            button.clicked.connect(self.create_button_handler(action))  # type: ignore[attr-defined]
             layout.addWidget(button)
 
         # Установка макета
@@ -273,14 +287,14 @@ class MainWindow(QMainWindow):
         # Инициализация размеров кнопок
         self.update_button_sizes()
 
-    def create_button_handler(self, action):
+    def create_button_handler(self, action: Any) -> Any:
         """
         Создает обработчик для кнопки, который воспроизводит звук и выполняет основное действие.
         :param action: Основное действие кнопки.
         :return: Функция-обработчик.
         """
 
-        def handler():
+        def handler() -> None:
             # Воспроизведение звука нажатия
             play_sound_effect("pm_button_click.mp3")
             # Выполнение основного действия
@@ -288,22 +302,22 @@ class MainWindow(QMainWindow):
 
         return handler
 
-    def continue_editing(self):
+    def continue_editing(self) -> None:
         print("Продолжение редактирования...")
         continue_last_session()
 
-    def create_new_space(self):
+    def create_new_space(self) -> None:
         print("Создание нового пространства...")
         create_new_space(self)
 
-    def load_space(self):
+    def load_space(self) -> None:
         print("Загрузка пространства...")
-        load_saved_space()
+        self.load_saved_space()
 
-    def open_settings(self):
+    def open_settings(self) -> None:
         print("Открытие настроек...")
 
-    def setup_main_menu(self):
+    def setup_main_menu(self) -> None:
         """
         Настройка верхнего меню (маленькие кнопки).
         """
@@ -318,16 +332,16 @@ class MainWindow(QMainWindow):
         save_action = QAction("Save", self)
         load_action = QAction("Load", self)
         exit_action = QAction("Exit", self)
-        save_action.triggered.connect(self.save_current_space)
-        load_action.triggered.connect(self.load_saved_space)
-        exit_action.triggered.connect(self.close)
+        save_action.triggered.connect(self.save_current_space)  # type: ignore[attr-defined]
+        load_action.triggered.connect(self.load_saved_space)  # type: ignore[attr-defined]
+        exit_action.triggered.connect(self.close)  # type: ignore[attr-defined]
         file_menu.addAction(save_action)
         file_menu.addAction(load_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
         print("Верхнее меню успешно создано.")
 
-    def save_current_space(self):
+    def save_current_space(self) -> None:
         """
         Сохраняет текущее состояние пространства.
         """
@@ -338,7 +352,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Ошибка при сохранении пространства: {e}")
 
-    def load_saved_space(self):
+    def load_saved_space(self) -> None:
         """
         Загружает последнее сохраненное состояние пространства.
         """
@@ -350,7 +364,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Ошибка при загрузке пространства: {e}")
 
-    def update_opengl_widget(self):
+    def update_opengl_widget(self) -> None:
         """
         Обновляет OpenGL-виджет после загрузки нового пространства.
         """
@@ -367,7 +381,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Ошибка при обновлении OpenGL-виджета: {e}")
 
-    def remove_main_menu(self):
+    def remove_main_menu(self) -> None:
         """
         Удаляет верхнее меню.
         """
@@ -375,7 +389,7 @@ class MainWindow(QMainWindow):
             self.menuBar().clear()
             print("Верхнее меню успешно удалено.")
 
-    def return_to_main_menu(self):
+    def return_to_main_menu(self) -> None:
         """
         Возвращает пользователя в главное меню.
         """

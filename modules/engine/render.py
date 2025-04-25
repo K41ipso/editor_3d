@@ -1,21 +1,47 @@
-from PyQt5.QtWidgets import QOpenGLWidget
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from typing import Any
+
+from OpenGL.GL import (
+    GL_COLOR_BUFFER_BIT,
+    GL_DEPTH_BUFFER_BIT,
+    GL_DEPTH_TEST,
+    GL_MODELVIEW,
+    GL_PROJECTION,
+    GL_QUADS,
+    glBegin,
+    glClear,
+    glClearColor,
+    glColor3f,
+    glEnable,
+    glEnd,
+    glLoadIdentity,
+    glMatrixMode,
+    glTranslatef,
+    glVertex3f,
+    glViewport,
+)
+from OpenGL.GLU import gluPerspective
+from PyQt5.QtWidgets import QOpenGLWidget, QWidget
 
 
 class Renderer(QOpenGLWidget):
-    def __init__(self, space_data=None, parent=None):
+    def __init__(self, space_data: Any = None, parent: QWidget | None = None) -> None:
+        """
+        Инициализация виджета OpenGL.
+
+        :param space_data: Данные пространства (по умолчанию None).
+        :param parent: Родительский виджет (по умолчанию None).
+        """
         super().__init__(parent)
         self.space_data = space_data
 
-    def initializeGL(self):
+    def initializeGL(self) -> None:
         """
         Инициализация OpenGL.
         """
         glClearColor(0.0, 0.0, 0.0, 1.0)  # Черный фон
         glEnable(GL_DEPTH_TEST)
 
-    def resizeGL(self, width, height):
+    def resizeGL(self, width: int, height: int) -> None:
         """
         Настройка проекции при изменении размеров окна.
         """
@@ -25,7 +51,7 @@ class Renderer(QOpenGLWidget):
         gluPerspective(45, width / height, 0.1, 50.0)
         glMatrixMode(GL_MODELVIEW)
 
-    def paintGL(self):
+    def paintGL(self) -> None:
         """
         Отрисовка OpenGL.
         """
@@ -34,7 +60,7 @@ class Renderer(QOpenGLWidget):
         glTranslatef(0.0, 0.0, -5.0)  # Перемещение камеры
         self.draw_cube()
 
-    def draw_cube(self):
+    def draw_cube(self) -> None:
         """
         Рисует куб (пример примитивного объекта).
         """

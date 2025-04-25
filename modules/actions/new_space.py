@@ -1,10 +1,13 @@
+from typing import Any
+
 from PyQt5.QtCore import QThread
+
 from modules.engine.core import Engine
 from modules.engine.opengl_widget import OpenGLWidget
 
 
 class SpaceCreationThread(QThread):
-    def __init__(self, engine, dimensions, save_path):
+    def __init__(self, engine: Any, dimensions: tuple[int, int, int], save_path: str) -> None:
         """
         Инициализация потока для создания нового пространства.
         :param engine: Экземпляр движка.
@@ -16,7 +19,7 @@ class SpaceCreationThread(QThread):
         self.dimensions = dimensions
         self.save_path = save_path
 
-    def run(self):
+    def run(self) -> None:
         """
         Основной метод потока.
         Создает новое пространство и сохраняет его состояние.
@@ -25,7 +28,7 @@ class SpaceCreationThread(QThread):
         self.engine.save_space(self.save_path)
 
 
-def create_new_space(main_window):
+def create_new_space(main_window: Any) -> None:
     """
     Создает новое пространство, сохраняет его состояние и отображает его.
     :param main_window: Экземпляр MainWindow.
@@ -62,7 +65,7 @@ def create_new_space(main_window):
     print("Пространство отображено.")
 
 
-def on_space_created(main_window, space_data):
+def on_space_created(main_window: Any, space_data: Any) -> None:
     """
     Вызывается после завершения создания пространства.
     :param main_window: Экземпляр MainWindow.
@@ -77,6 +80,7 @@ def on_space_created(main_window, space_data):
 
     # Заменяем главное меню на OpenGL-виджет
     from modules.engine.render import Renderer  # Импортируем Renderer
+
     renderer = Renderer(space_data)
     main_window.setCentralWidget(renderer)
 

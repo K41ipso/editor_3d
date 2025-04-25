@@ -1,15 +1,30 @@
-# Ignore virtual environment
-.venv/
-
-# Ignore Python cache files
+# Исключение кэша Python
 __pycache__/
-*.pyc
+*.py[cod]
 
-# Ignore PyCharm files
+# Исключение временных файлов IDE
+.vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
 
-# Ignore log files
-*.log
+# Исключение файлов линтеров и форматеров
+.flake8
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Ignore macOS specific files
-.DS_Store
+# Исключение файлов, создаваемых pytest
+.cache/
+.log/
+
+# Исключение файлов, создаваемых редакторами
+*.tmp
+*.swp
+*.swo
+
+# Исключение директорий venv
+venv/
+.env/
+.venv/

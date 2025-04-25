@@ -1,8 +1,9 @@
-import os
 import json
+import os
+from typing import Any
 
 
-def save_state(state, file_path="saves/temp_state.json"):
+def save_state(state: Any, file_path: str = "saves/temp_state.json") -> None:
     """
     Сохраняет состояние пространства в файл.
     :param state: Состояние пространства (например, NumPy массив).
@@ -24,7 +25,7 @@ def save_state(state, file_path="saves/temp_state.json"):
         print(f"Ошибка при сохранении состояния: {e}")
 
 
-def load_state(file_path="saves/temp_state.json"):
+def load_state(file_path: str = "saves/temp_state.json") -> Any | None:
     """
     Загружает состояние пространства из файла.
     :param file_path: Путь к файлу сохранения.
@@ -40,13 +41,14 @@ def load_state(file_path="saves/temp_state.json"):
 
         # Преобразуем список обратно в NumPy массив
         import numpy as np
+
         return np.array(data)
     except Exception as e:
         print(f"Ошибка при загрузке состояния: {e}")
         return None
 
 
-def load_last_session(default_path="saves/last_session.json"):
+def load_last_session(default_path: str = "saves/last_session.json") -> Any | None:
     """
     Загружает последнее сохранение сессии.
     :param default_path: Путь к файлу последнего сохранения.
