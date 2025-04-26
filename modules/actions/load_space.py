@@ -22,9 +22,13 @@ def load_saved_space(main_window: Any = None) -> None:
 
     # Проверяем, что main_window передан
     if main_window is not None:
+        # Сброс позиции камеры
+        if hasattr(main_window, "keyboard_handler"):
+            main_window.keyboard_handler.position = [0, 0, 0]
+
         # Заменяем главное меню на OpenGL-виджет
         print("Инициализация OpenGL...")
-        opengl_widget = OpenGLWidget(engine.get_space())
+        opengl_widget = OpenGLWidget(engine.get_space(), keyboard_handler=main_window.keyboard_handler)
         print("OpenGL инициализирован.")
         main_window.setCentralWidget(opengl_widget)
         print('setCentralWidget закончил свою работу.')

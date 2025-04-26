@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import QOpenGLWidget, QWidget
 
 
 class Renderer(QOpenGLWidget):
-    def __init__(self, space_data: Any = None, parent: QWidget | None = None) -> None:
+    def __init__(self, space_data: Any = None, parent: Any | None = None, keyboard_handler: Any = None) -> None:
         """
         Инициализация виджета OpenGL.
 

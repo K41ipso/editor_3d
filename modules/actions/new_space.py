@@ -50,9 +50,13 @@ def create_new_space(main_window: Any = None) -> None:
         if old_widget:
             old_widget.deleteLater()
 
+        # Сброс позиции камеры
+        if hasattr(main_window, "keyboard_handler"):
+            main_window.keyboard_handler.position = [0, 0, 0]
+
         # Заменяем главное меню на OpenGL-виджет
         print("Инициализация OpenGL...")
-        renderer = OpenGLWidget(engine.get_space())
+        renderer = OpenGLWidget(engine.get_space(), keyboard_handler=main_window.keyboard_handler)
         print("OpenGL инициализирован.")
         main_window.setCentralWidget(renderer)
         print('setCentralWidget закончил свою работу.')
@@ -83,10 +87,14 @@ def on_space_created(main_window: Any, space_data: Any) -> None:
     if old_widget:
         old_widget.deleteLater()
 
+    # Сброс позиции камеры
+    if hasattr(main_window, "keyboard_handler"):
+        main_window.keyboard_handler.position = [0, 0, 0]
+
     # Заменяем главное меню на OpenGL-виджет
     from modules.engine.render import Renderer  # Импортируем Renderer
 
-    renderer = Renderer(space_data)
+    renderer = Renderer(space_data, keyboard_handler=main_window.keyboard_handler)
     main_window.setCentralWidget(renderer)
 
     # Добавляем верхнее меню

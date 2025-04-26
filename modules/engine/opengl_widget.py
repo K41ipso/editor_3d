@@ -27,12 +27,13 @@ from PyQt5.QtWidgets import QOpenGLWidget
 
 
 class OpenGLWidget(QOpenGLWidget):
-    def __init__(self, space_data: Any = None, parent: Any = None) -> None:
+    def __init__(self, space_data: Any = None, parent: Any = None, keyboard_handler: Any = None) -> None:
         super().__init__(parent)
         self.space_data = space_data
         self.rotation_x = 0  # Угол поворота по оси X
         self.rotation_y = 0  # Угол поворота по оси Y
         self.last_mouse_pos = None  # Последняя позиция мыши
+        self.keyboard_handler = keyboard_handler # Ссылка на KeyboardHandler для доступа к координатам
 
     def initializeGL(self) -> None:
         """
@@ -57,7 +58,14 @@ class OpenGLWidget(QOpenGLWidget):
         """
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
-        glTranslatef(0.0, 0.0, -5.0)  # Перемещение камеры
+
+        # Применение координат из KeyboardHandler
+        if self.keyboard_handler:
+            x, y, z = self.keyboard_handler.position
+            glTranslatef(x, y, z - 5.0)  # Перемещение камеры (z - 5.0 для отдаления от объектов)
+        else:
+            glTranslatef(0.0, 0.0, -5.0)  # Задний план, если KeyboardHandler не задан
+
         glRotatef(self.rotation_x, 1, 0, 0)  # Поворот по оси X
         glRotatef(self.rotation_y, 0, 1, 0)  # Поворот по оси Y
 
@@ -66,6 +74,9 @@ class OpenGLWidget(QOpenGLWidget):
 
         # Рисуем куб (пример примитивного объекта)
         self.draw_cube()
+
+        # Вызываем update() для следующей перерисовки
+        self.update()
 
     def draw_cube(self) -> None:
         """

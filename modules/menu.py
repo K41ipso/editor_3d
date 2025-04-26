@@ -2,7 +2,7 @@ import os
 import sys
 from typing import Any
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QBrush, QIcon, QPalette, QPixmap
 from PyQt5.QtWidgets import (
     QAction,
@@ -18,12 +18,32 @@ from PyQt5.QtWidgets import (
 from modules.actions import continue_last_session, create_new_space
 from modules.audio import play_background_music, play_sound_effect
 from modules.engine import Engine, OpenGLWidget
+from modules.input_handler.keyboard import KeyboardHandler
 
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.engine = Engine()  # Создаем экземпляр движка
+
+        # Инициализация обработчика клавиатуры
+        self.keyboard_handler = KeyboardHandler()
+
+        # Пример привязки клавиш
+        self.keyboard_handler.bind_key("W", self.keyboard_handler.move_forward)
+        self.keyboard_handler.bind_key("A", self.keyboard_handler.move_left)
+        self.keyboard_handler.bind_key("S", self.keyboard_handler.move_backward)
+        self.keyboard_handler.bind_key("D", self.keyboard_handler.move_right)
+        self.keyboard_handler.bind_key("Q", self.keyboard_handler.move_up)
+        self.keyboard_handler.bind_key("E", self.keyboard_handler.move_down)
+        self.keyboard_handler.bind_key("Z", lambda: self.close())
+        self.keyboard_handler.bind_key("Ц", self.keyboard_handler.move_forward)
+        self.keyboard_handler.bind_key("Ф", self.keyboard_handler.move_left)
+        self.keyboard_handler.bind_key("Ы", self.keyboard_handler.move_backward)
+        self.keyboard_handler.bind_key("В", self.keyboard_handler.move_right)
+        self.keyboard_handler.bind_key("Й", self.keyboard_handler.move_up)
+        self.keyboard_handler.bind_key("У", self.keyboard_handler.move_down)
+        self.keyboard_handler.bind_key("Я", lambda: self.close())
 
         # Установка иконки приложения
         self.setup_window_icon()
@@ -278,6 +298,12 @@ class MainWindow(QMainWindow):
                 self.showFullScreen()  # Переключение на полноэкранный режим
         elif event.key() == Qt.Key_Escape:  # Возврат в главное меню при нажатии Esc
             self.return_to_main_menu()
+
+        """Обработка нажатия клавиш."""
+        key = event.text().upper()  # Преобразуем символ в верхний регистр
+        if key:
+            self.keyboard_handler.handle_key_press(key)
+        super().keyPressEvent(event)  # Вызываем базовый метод для дальнейшей обработки
 
     def setup_main_buttons(self) -> None:
         """Настройка главного меню с большими кнопками."""
