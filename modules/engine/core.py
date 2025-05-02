@@ -3,6 +3,8 @@ from typing import Any
 
 import numpy as np
 
+from PyQt5.QtWidgets import QApplication, QInputDialog
+
 from .loader import load_last_session, load_state, save_state
 
 
@@ -59,24 +61,38 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при очистке пространства: {e}")
 
-    def save_space(self, file_path: str | None = None) -> None:
+    def save_space(self, parent_widget: Any, file_path: str | None = None) -> None:
         """
         Сохраняет текущее состояние пространства.
-        :param file_path: Путь к файлу (если не указан, используется self.state_file).
+        :param parent_widget: Виджет, который будет родителем для диалога.
+        :param file_path: Путь к файлу (если не указан, используется уникальное имя).
         """
         try:
             if self.space is None:
                 raise ValueError("Нечего сохранять: пространство не инициализировано.")
-            file_path = file_path or self.state_file
 
-            # Создаем директорию, если она не существует
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-            # Сохраняем данные в файл
-            save_state(self.space, file_path)
-            print(f"Пространство успешно сохранено в {file_path}.")
+            # Создаем уникальное имя файла с временной меткой
+            file_name, ok = QInputDialog.getText(
+                parent_widget,  # Передаем виджет, а не self
+                "Сохранить пространство",
+                "Введите имя файла:"
+            )
+            if ok and file_name:
+                file_path = f"saves/{file_name}.json"
+                # Создаем директорию, если она не существует
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                # Сохраняем данные в файл
+                save_state(self.space, file_path)
+                print(f"Пространство успешно сохранено в {file_path}.")
         except Exception as e:
             print(f"Ошибка при сохранении пространства: {e}")
+
+    def exit_application(self) -> None:
+        """
+        Завершает работу приложения с автосохранением.
+        """
+        self.save_space()
+        QApplication.quit()
 
     def load_space(self, file_path: str | None = None) -> None:
         """

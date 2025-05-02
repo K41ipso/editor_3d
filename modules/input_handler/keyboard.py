@@ -1,10 +1,11 @@
 class KeyboardHandler:
-    def __init__(self):
+    def __init__(self, main_window=None):
         self.key_bindings = {}  # Словарь для хранения привязок клавиш к действиям
         self.position = [0, 0, 0]  # Текущие координаты (x, y, z)
-        self.speed = 1  # Скорость перемещения
-        self.opengl_widget = None  # Ссылка на OpenGL-виджет
         self.last_position = [0, 0, 0]  # Последние известные координаты
+        self.speed = 0.1  # Скорость перемещения
+        self.opengl_widget = None  # Ссылка на OpenGL-виджет
+        self.main_window = main_window  # Ссылка на MainWindow
 
     def bind_key(self, key, action):
         """Привязывает клавишу к действию."""
@@ -16,8 +17,10 @@ class KeyboardHandler:
             self.key_bindings[key]()
             print(f"Текущая позиция: {self.position}")
             if self.opengl_widget and self.position != self.last_position:
-                self.opengl_widget.update()  # Перерисовываем виджет, если координаты изменились
+                self.main_window.update_opengl_widget()  # Вызов метода перерисовки из MainWindow
                 self.last_position = self.position[:]  # Обновляем последние известные координаты
+            else:
+                print("OpenGL Widget не установлен или позиция не изменилась.")
         else:
             print(f"Клавиша '{key}' не привязана ни к какому действию.")
 

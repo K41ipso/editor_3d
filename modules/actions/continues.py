@@ -9,7 +9,7 @@ def continue_last_session(main_window: Any = None) -> None:
     Продолжает работу с последним сохранением.
     :param main_window: Экземпляр MainWindow (опционально).
     """
-    engine = Engine()
+    engine = main_window.engine if main_window else Engine()
     try:
         engine.continue_last_session()
         print("Продолжение работы с последним сохранением.")
@@ -20,19 +20,15 @@ def continue_last_session(main_window: Any = None) -> None:
         print(f"Неожиданная ошибка при продолжении работы: {e}")
         return
 
-    # Проверяем, что main_window передан
     if main_window is not None:
-        # Сброс позиции камеры
         if hasattr(main_window, "keyboard_handler"):
             main_window.keyboard_handler.position = [0, 0, 0]
 
-        # Заменяем главное меню на OpenGL-виджет
         print("Инициализация OpenGL...")
         opengl_widget = OpenGLWidget(engine.get_space(), keyboard_handler=main_window.keyboard_handler)
         print("OpenGL инициализирован.")
         main_window.setCentralWidget(opengl_widget)
 
-        # Добавляем верхнее меню
         try:
             main_window.setup_main_menu()
         except AttributeError:

@@ -1,9 +1,11 @@
 from typing import Any
+import datetime
 
 from PyQt5.QtCore import QThread
 
 from modules.engine.core import Engine
 from modules.engine.opengl_widget import OpenGLWidget
+from modules.engine.render import Renderer  # Импортируем Renderer
 
 
 class SpaceCreationThread(QThread):
@@ -37,9 +39,10 @@ def create_new_space(main_window: Any = None) -> None:
     engine.initialize_empty_space(dimensions=(10, 10, 10))
     print("Новое пространство создано.")
 
+    # Создаем уникальное имя файла с временной меткой
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    save_path = f"saves/space_{timestamp}.json"
 
-    # Сохраняем состояние в файл
-    save_path = "saves/new_space.json"
     engine.save_space(save_path)
     print(f"Состояние сохранено в {save_path}.")
 
@@ -92,7 +95,6 @@ def on_space_created(main_window: Any, space_data: Any) -> None:
         main_window.keyboard_handler.position = [0, 0, 0]
 
     # Заменяем главное меню на OpenGL-виджет
-    from modules.engine.render import Renderer  # Импортируем Renderer
 
     renderer = Renderer(space_data, keyboard_handler=main_window.keyboard_handler)
     main_window.setCentralWidget(renderer)

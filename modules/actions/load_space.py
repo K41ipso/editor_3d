@@ -2,6 +2,7 @@ from typing import Any
 
 from modules.engine.core import Engine
 from modules.engine.opengl_widget import OpenGLWidget
+from PyQt5.QtWidgets import QFileDialog
 
 
 def load_saved_space(main_window: Any = None) -> None:
@@ -9,16 +10,37 @@ def load_saved_space(main_window: Any = None) -> None:
     Загружает сохраненное пространство и отображает его.
     :param main_window: Экземпляр MainWindow (опционально).
     """
-    engine = Engine()
     try:
-        engine.load_space("saves/current_space.json")
-        print("Пространство успешно загружено.")
+        # Открываем диалог выбора файла
+        options = QFileDialog.Options()
+        file_path, _ = QFileDialog.getOpenFileName(
+            main_window,  # Передаем main_window как родительский виджет
+            "Выберите файл сохранения",
+            "saves/",  # Директория по умолчанию
+            "JSON Files (*.json);;All Files (*)",  # Фильтр файлов
+            options=options
+        )
+
+        if not file_path:
+            print("Файл не выбран.")
+            return
+
+        # Загружаем пространство из выбранного файла
+        main_window.engine.load_space(file_path)
+        print(f"Пространство успешно загружено из {file_path}.")
+
+        # Обновляем дату редактирования файла
+        with open(file_path, 'r+') as file:
+            content = file.read()
+            file.seek(0)
+            file.write(content + ' ')  # Добавляем пробел
+            file.truncate()  # Удаляем пробел
+            print(f"Дата редактирования файла {file_path} обновлена.")
+
     except FileNotFoundError:
-        print("Ошибка при загрузке состояния: Файл сохранения не найден по пути saves/current_space.json.")
-        return
+        print(f"Ошибка при загрузке состояния: Файл сохранения не найден по пути {file_path}.")
     except Exception as e:
         print(f"Неожиданная ошибка при загрузке пространства: {e}")
-        return
 
     # Проверяем, что main_window передан
     if main_window is not None:
@@ -28,7 +50,10 @@ def load_saved_space(main_window: Any = None) -> None:
 
         # Заменяем главное меню на OpenGL-виджет
         print("Инициализация OpenGL...")
-        opengl_widget = OpenGLWidget(engine.get_space(), keyboard_handler=main_window.keyboard_handler)
+        opengl_widget = OpenGLWidget(
+            main_window.engine.get_space(),
+            keyboard_handler=main_window.keyboard_handler
+        )
         print("OpenGL инициализирован.")
         main_window.setCentralWidget(opengl_widget)
         print('setCentralWidget закончил свою работу.')

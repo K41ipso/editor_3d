@@ -2,7 +2,9 @@ import os
 import sys
 from typing import Any
 
-from PyQt5.QtCore import Qt, QTimer
+from functools import partial
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QIcon, QPalette, QPixmap
 from PyQt5.QtWidgets import (
     QAction,
@@ -13,23 +15,27 @@ from PyQt5.QtWidgets import (
     QSystemTrayIcon,
     QVBoxLayout,
     QWidget,
+    QFileDialog,
+    QDialog
 )
 
-from modules.actions import continue_last_session, create_new_space
+from modules.actions import continue_last_session, create_new_space, load_saved_space
 from modules.audio import play_background_music, play_sound_effect
 from modules.engine import Engine, OpenGLWidget
 from modules.input_handler.keyboard import KeyboardHandler
+from modules.tools.modal_dialogs import PointsInputDialog
 
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.engine = Engine()  # Создаем экземпляр движка
+        self.opengl = OpenGLWidget() # Создаем экземпляр рендера
 
         # Инициализация обработчика клавиатуры
-        self.keyboard_handler = KeyboardHandler()
+        self.keyboard_handler = KeyboardHandler(main_window=self)
 
-        # Пример привязки клавиш
+        # Привязка клавиш
         self.keyboard_handler.bind_key("W", self.keyboard_handler.move_forward)
         self.keyboard_handler.bind_key("A", self.keyboard_handler.move_left)
         self.keyboard_handler.bind_key("S", self.keyboard_handler.move_backward)
@@ -71,7 +77,7 @@ class MainWindow(QMainWindow):
         exit_button.clicked.connect(self.close)  # type: ignore[attr-defined]
 
         # Воспроизведение фоновой музыки
-        play_background_music("menu_music_e1m1.mp3", volume=0.3)
+        play_background_music("menu_music_e1m1.mp3", volume=0)
 
     def setup_window_icon(self) -> None:
         """
@@ -140,11 +146,18 @@ class MainWindow(QMainWindow):
         """
         try:
             # Абсолютный путь к иконке
-            icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../resources/images/app_icon_win.ico"))
+            icon_path = os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "../resources/images/app_icon_win.ico"
+                )
+            )
 
             # Проверяем существование файла
             if not os.path.exists(icon_path):
-                raise FileNotFoundError(f"Иконка не найдена по пути {icon_path}")
+                raise FileNotFoundError(
+                    f"Иконка не найдена по пути {icon_path}"
+                )
 
             # Загружаем иконку
             icon = QIcon(icon_path)
@@ -302,8 +315,13 @@ class MainWindow(QMainWindow):
         """Обработка нажатия клавиш."""
         key = event.text().upper()  # Преобразуем символ в верхний регистр
         if key:
+            renderer = OpenGLWidget(self.engine.get_space(), keyboard_handler=self.keyboard_handler)
+            self.keyboard_handler.set_opengl_widget(renderer)
             self.keyboard_handler.handle_key_press(key)
         super().keyPressEvent(event)  # Вызываем базовый метод для дальнейшей обработки
+
+    def set_is_edit_mode_true(self):
+        self.is_edit_mode = True
 
     def setup_main_buttons(self) -> None:
         """Настройка главного меню с большими кнопками."""
@@ -355,15 +373,17 @@ class MainWindow(QMainWindow):
 
     def continue_editing(self) -> None:
         print("Продолжение редактирования...")
-        continue_last_session()
+        continue_last_session(self)
 
     def create_new_space(self) -> None:
         print("Создание нового пространства...")
+        self.engine.initialize_empty_space()
+        self.set_is_edit_mode_true()
         create_new_space(self)
 
     def load_space(self) -> None:
         print("Загрузка пространства...")
-        self.load_saved_space()
+        load_saved_space(self)
 
     def open_settings(self) -> None:
         print("Открытие настроек...")
@@ -380,53 +400,107 @@ class MainWindow(QMainWindow):
         menu_bar = self.menuBar()
         # Меню "File"
         file_menu = menu_bar.addMenu("File")
+
         save_action = QAction("Save", self)
+        save_action.triggered.connect(partial(self.engine.save_space, self))
+
         load_action = QAction("Load", self)
+        load_action.triggered.connect(self.load_space_from_file)
+
         exit_action = QAction("Exit", self)
-        save_action.triggered.connect(self.save_current_space)  # type: ignore[attr-defined]
-        load_action.triggered.connect(self.load_saved_space)  # type: ignore[attr-defined]
-        exit_action.triggered.connect(self.close)  # type: ignore[attr-defined]
+        exit_action.triggered.connect(self.engine.exit_application)
+
+        draw_planes_menu = menu_bar.addMenu("Рисование плоскостей через")
+        draw_planes_menu.addAction("Три точки", self.on_draw_plane_three_points)
+        draw_planes_menu.addAction("Точку и отрезок", self.on_draw_plane_point_segment)
+        draw_planes_menu.addAction("Точку и параллель", self.on_draw_plane_point_parallel)
+
         file_menu.addAction(save_action)
         file_menu.addAction(load_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
         print("Верхнее меню успешно создано.")
 
-    def save_current_space(self) -> None:
-        """
-        Сохраняет текущее состояние пространства.
-        """
+    def on_draw_plane_three_points(self):
         try:
-            save_path = "saves/current_space.json"
-            self.engine.save_space(file_path=save_path)
-            print(f"Текущее пространство успешно сохранено в {save_path}.")
+            print("Рисование плоскости через три точки")
+            current_widget = self.centralWidget()
+            if isinstance(current_widget, OpenGLWidget):
+                dialog = PointsInputDialog(current_widget)
+                if dialog.exec_() == QDialog.Accepted:
+                    points = dialog.get_points()
+                    print(f"Полученные координаты: {points}")
+                    current_widget.draw_plane(points)
+                    current_widget.update()
+            else:
+                print("Текущий центральный виджет не является OpenGLWidget.")
         except Exception as e:
-            print(f"Ошибка при сохранении пространства: {e}")
+            print(f"Ошибка при рисовании плоскости: {e}")
 
-    def load_saved_space(self) -> None:
-        """
-        Загружает последнее сохраненное состояние пространства.
-        """
+    def on_draw_plane_point_segment(self):
         try:
-            save_path = "saves/current_space.json"
-            self.engine.load_space(file_path=save_path)
-            print(f"Пространство успешно загружено из {save_path}.")
-            self.update_opengl_widget()  # Обновляем OpenGL-виджет после загрузки
+            self.update_opengl_widget()
+            print("Рисование плоскости через точку и отрезок")
+            current_widget = self.centralWidget()
+            if isinstance(current_widget, OpenGLWidget):
+                current_widget.draw_cube()
+                current_widget.update()
+                print("Куб успешно отрисован")
+            else:
+                print("Текущий центральный виджет не является OpenGLWidget.")
         except Exception as e:
-            print(f"Ошибка при загрузке пространства: {e}")
+            print(f"Ошибка при рисовании куба: {e}")
+
+    def on_draw_plane_point_parallel(self):
+        # Логика для "Точку и параллель"
+        print("Рисование плоскости через точку и параллель")
+
+    def load_space_from_file(self) -> None:
+        """
+        Загружает пространство из выбранного файла.
+        """
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите файл сохранения",
+            "saves/",
+            "JSON Files (*.json);;All Files (*)",
+            options=options
+        )
+        if file_name:
+            self.engine.load_space(file_path=file_name)
+            print(f"Пространство загружено из {file_name}.")
+            self.setup_main_menu()  # Восстанавливаем меню после загрузки
 
     def update_opengl_widget(self) -> None:
         """
         Обновляет OpenGL-виджет после загрузки нового пространства.
         """
+        rotation_x = 0.0
+        rotation_y = 0.0
+        last_mouse_pos = None
+        mouse_pressed = False
         try:
-            # Удаляем старый виджет
+            # Удаляем старый виджет и сохраняем его состояние
             old_widget = self.centralWidget()
-            if old_widget:
+            if isinstance(old_widget, OpenGLWidget):
+                # Сохраняем углы поворота и положение мыши
+                rotation_x = old_widget.rotation_x
+                rotation_y = old_widget.rotation_y
+                last_mouse_pos = old_widget.last_mouse_pos
+                mouse_pressed = old_widget.mouse_pressed
                 old_widget.deleteLater()
 
             # Создаем новый OpenGL-виджет с загруженным пространством
-            renderer = OpenGLWidget(self.engine.get_space())
+            renderer = OpenGLWidget(
+                self.engine.get_space(),
+                keyboard_handler=self.keyboard_handler,
+                rotation_x=rotation_x,
+                rotation_y=rotation_y,
+                last_mouse_pos=last_mouse_pos,
+                mouse_pressed=True
+            )
+            self.keyboard_handler.set_opengl_widget(renderer)
             self.setCentralWidget(renderer)
             print("OpenGL-виджет успешно обновлен.")
         except Exception as e:
@@ -447,3 +521,25 @@ class MainWindow(QMainWindow):
         self.remove_main_menu()  # Удаляем верхнее меню
         self.setup_main_buttons()  # Восстанавливаем главное меню с большими кнопками
         print("Возвращение в главное меню.")
+
+    def load_space_from_file(self) -> None:
+        """
+        Загружает пространство из выбранного файла.
+        """
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите файл сохранения",
+            "saves/",
+            "JSON Files (*.json);;All Files (*)",
+            options=options
+        )
+        if file_name:
+            self.engine.load_space(file_path=file_name)
+            print(f"Пространство загружено из {file_name}.")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
