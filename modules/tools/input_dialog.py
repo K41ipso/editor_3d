@@ -17,7 +17,7 @@ class PointsInputDialog(QDialog):
         # Устанавливаем валидатор для ввода только чисел
         validator = QDoubleValidator()
         validator.setNotation(QDoubleValidator.StandardNotation)
-        validator.setRange(-9999.0, 9999.0)  # Установите диапазон значений по вашему усмотрению
+        validator.setRange(-999.0, 999.0)  # Установите диапазон значений по вашему усмотрению
 
         for i, (label, input_fields) in enumerate(zip(self.point_labels, self.point_inputs)):
             self.layout.addWidget(label)

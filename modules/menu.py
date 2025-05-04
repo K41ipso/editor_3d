@@ -444,15 +444,6 @@ class MainWindow(QMainWindow):
             if dialog.exec_() == QDialog.Accepted:
                 points, color = dialog.get_points_and_color()
                 print(f"Полученные координаты: {points}, цвет: {color}")
-
-                # Вычисляем четвертую точку
-                p1, p2, p3 = points
-                v1 = (p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2])
-                v2 = (p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2])
-                p4 = (p1[0] + v1[0] + v2[0], p1[1] + v1[1] + v2[1], p1[2] + v1[2] + v2[2])
-
-                # Добавляем четвертую точку и сортируем
-                points.append(p4)
                 sorted_points = self.sort_points(points)
 
                 # Добавляем плоскость в движок

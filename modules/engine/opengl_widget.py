@@ -5,7 +5,7 @@ from OpenGL.GL import (
     GL_DEPTH_TEST,
     GL_MODELVIEW,
     GL_PROJECTION,
-    GL_QUADS,
+    GL_TRIANGLES,
     GL_LINES,
     glBegin,
     glClear,
@@ -110,12 +110,12 @@ class OpenGLWidget(QOpenGLWidget):
                 points = plane_data["points"]
                 color = plane_data["color"]
 
-                if len(points) < 4:
+                if len(points) < 3:
                     print(f"Недостаточно точек для отрисовки плоскости {plane_id}.")
                     continue
 
                 # Установка цвета и начало рисования
-                glBegin(GL_QUADS)
+                glBegin(GL_TRIANGLES)
                 glColor3f(*color)
 
                 for point in points:
