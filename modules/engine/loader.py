@@ -5,27 +5,17 @@ from PyQt5.QtWidgets import QFileDialog
 import numpy as np
 
 
-def save_state(state: Any, file_path: str = "saves/temp_state.json") -> None:
+def save_state(space_data: Any, file_path: str) -> None:
     """
     Сохраняет состояние пространства в файл.
-    :param state: Состояние пространства (например, NumPy массив).
-    :param file_path: Путь к файлу сохранения.
+    :param space_data: Данные пространства для сохранения.
+    :param file_path: Путь к файлу для сохранения.
     """
     try:
-        # Преобразуем NumPy массив в список для сериализации
-        if hasattr(state, "tolist"):  # Если это NumPy массив
-            state = state.tolist()
-
-        # Создаем директорию, если она не существует
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-        # Сохраняем данные в файл
-        with open(file_path, "w") as file:
-            json.dump(state, file)
-        print(f"Состояние успешно сохранено в {file_path}.")
+        with open(file_path, 'w') as file:
+            json.dump(space_data, file, indent=4)
     except Exception as e:
         print(f"Ошибка при сохранении состояния: {e}")
-
 
 def load_state(file_path: str = None) -> Any | None:
     """
@@ -41,7 +31,6 @@ def load_state(file_path: str = None) -> Any | None:
     except Exception as e:
         print(f"Ошибка при загрузке состояния: {e}")
     return data
-
 
 def load_last_session(saves_directory: str = "saves") -> Any | None:
     """

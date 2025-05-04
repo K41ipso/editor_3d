@@ -378,7 +378,6 @@ class MainWindow(QMainWindow):
 
     def create_new_space(self) -> None:
         print("Создание нового пространства...")
-        self.engine.initialize_empty_space()
         self.set_is_edit_mode_true()
         create_new_space(self)
 

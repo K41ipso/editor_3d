@@ -104,23 +104,23 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при очистке пространства: {e}")
 
-    def save_space(self, parent_widget: Any) -> None:
+    def save_space(self, parent_widget: Any, file_name: str | None = None) -> None:
         """
         Сохраняет текущее состояние пространства.
         :param parent_widget: Виджет, который будет родителем для диалога.
-        :param file_path: Путь к файлу (если не указан, используется уникальное имя).
         """
         try:
             if self.space_data is None:
                 raise ValueError("Нечего сохранять: пространство не инициализировано.")
 
-            # Создаем уникальное имя файла с временной меткой
-            file_name, ok = QInputDialog.getText(
-                parent_widget,  # Передаем виджет, а не self
-                "Сохранить пространство",
-                "Введите имя файла:"
-            )
-            if ok and file_name:
+            if not file_name:
+                # Создаем уникальное имя файла с временной меткой
+                file_name, _ = QInputDialog.getText(
+                    parent_widget,  # Передаем виджет, а не self
+                    "Сохранить пространство",
+                    "Введите имя файла:"
+                )
+            if file_name:
                 file_path = f"saves/{file_name}.json"
                 # Создаем директорию, если она не существует
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
