@@ -70,7 +70,7 @@ class PointsInputDialog(QDialog):
 
     def get_points(self):
         return (
-            (self.point1_x.text(), self.point1_y.text(), self.point1_z.text()),
-            (self.point2_x.text(), self.point2_y.text(), self.point2_z.text()),
-            (self.point3_x.text(), self.point3_y.text(), self.point3_z.text())
+            (float(self.point1_x.text()), float(self.point1_y.text()), float(self.point1_z.text())),
+            (float(self.point2_x.text()), float(self.point2_y.text()), float(self.point2_z.text())),
+            (float(self.point3_x.text()), float(self.point3_y.text()), float(self.point3_z.text()))
         )

@@ -422,34 +422,35 @@ class MainWindow(QMainWindow):
         print("Верхнее меню успешно создано.")
 
     def on_draw_plane_three_points(self):
-        try:
-            print("Рисование плоскости через три точки")
-            current_widget = self.centralWidget()
-            if isinstance(current_widget, OpenGLWidget):
-                dialog = PointsInputDialog(current_widget)
-                if dialog.exec_() == QDialog.Accepted:
-                    points = dialog.get_points()
-                    print(f"Полученные координаты: {points}")
-                    current_widget.draw_plane(points)
-                    current_widget.update()
-            else:
-                print("Текущий центральный виджет не является OpenGLWidget.")
-        except Exception as e:
-            print(f"Ошибка при рисовании плоскости: {e}")
+        pass
+        # try:
+        #     print("Рисование плоскости через три точки")
+        #     current_widget = self.centralWidget()
+        #     if isinstance(current_widget, OpenGLWidget):
+        #         dialog = PointsInputDialog(current_widget)
+        #         if dialog.exec_() == QDialog.Accepted:
+        #             points = dialog.get_points()
+        #             print(f"Полученные координаты: {points}")
+        #             current_widget.draw_plane(points)
+        #     else:
+        #         print("Текущий центральный виджет не является OpenGLWidget.")
+        # except Exception as e:
+        #     print(f"Ошибка при рисовании плоскости: {e}")
 
     def on_draw_plane_point_segment(self):
-        try:
-            self.update_opengl_widget()
-            print("Рисование плоскости через точку и отрезок")
-            current_widget = self.centralWidget()
-            if isinstance(current_widget, OpenGLWidget):
-                current_widget.draw_cube()
-                current_widget.update()
-                print("Куб успешно отрисован")
-            else:
-                print("Текущий центральный виджет не является OpenGLWidget.")
-        except Exception as e:
-            print(f"Ошибка при рисовании куба: {e}")
+        pass
+        # try:
+        #     self.update_opengl_widget()
+        #     print("Рисование плоскости через точку и отрезок")
+        #     current_widget = self.centralWidget()
+        #     if isinstance(current_widget, OpenGLWidget):
+        #         current_widget.draw_cube()
+        #         current_widget.update()
+        #         print("Куб успешно отрисован")
+        #     else:
+        #         print("Текущий центральный виджет не является OpenGLWidget.")
+        # except Exception as e:
+        #     print(f"Ошибка при рисовании куба: {e}")
 
     def on_draw_plane_point_parallel(self):
         # Логика для "Точку и параллель"

@@ -17,39 +17,77 @@ class Engine:
         """
         Инициализация движка.
         """
-        self.space: Any = None  # Текущее состояние пространства
-        self.state_file = "saves/current_space.json"  # Путь к файлу состояния
+        self.space_data: Any = None  # Текущее состояние пространства
         self.initialize_empty_space_called = False
         self.load_space_called = False
         print("Движок инициализирован.")
 
-    def initialize_empty_space(self, dimensions: tuple[int, int, int] = (10, 10, 10)) -> None:
+    def initialize_empty_space(self) -> None:
         """
         Создает пустое пространство заданных размеров.
         :param dimensions: Размеры пространства (x, y, z).
         """
         try:
-            self.space = np.zeros(dimensions, dtype=int)  # Пустое пространство (массив нулей)
+            self.space = {
+                "point": {},
+                "segment": {},
+                "plane": {},
+                "polyhedron": {}
+            }
             self.initialize_empty_space_called = True
-            print(f"Создано новое пространство размером {dimensions}.")
+            print(f"Создано новое пространство.")
         except Exception as e:
             print(f"Ошибка при создании пространства: {e}")
 
-    def update_space(self, position: Any, value: int) -> None:
+    def add_point(self, id: str, coordinates: tuple, color: str) -> None:
         """
-        Обновляет значение в определенной позиции пространства.
-        :param position: Координаты (x, y, z).
-        :param value: Новое значение.
+        Добавляет точку в пространство.
+        :param id: Идентификатор точки.
+        :param coordinates: Координаты точки.
+        :param color: Цвет точки.
         """
-        try:
-            if self.space is None:
-                raise ValueError("Пространство не инициализировано.")
-            self.space[position] = value
-            print(f"Обновлено значение в позиции {position}: {value}")
-        except IndexError:
-            print(f"Ошибка: Позиция {position} выходит за пределы пространства.")
-        except Exception as e:
-            print(f"Неожиданная ошибка при обновлении пространства: {e}")
+        self.space_data["point"][id] = {
+            "coordinates": coordinates,
+            "color": color
+        }
+
+    def add_segment(self, id: str, start: tuple, end: tuple, color: str) -> None:
+        """
+        Добавляет сегмент в пространство.
+        :param id: Идентификатор сегмента.
+        :param start: Начальная точка сегмента.
+        :param end: Конечная точка сегмента.
+        :param color: Цвет сегмента.
+        """
+        self.space_data["segment"][id] = {
+            "start": start,
+            "end": end,
+            "color": color
+        }
+
+    def add_plane(self, id: str, points: list, color: str) -> None:
+        """
+        Добавляет плоскость в пространство.
+        :param id: Идентификатор плоскости.
+        :param points: Список точек, определяющих плоскость.
+        :param color: Цвет плоскости.
+        """
+        self.space_data["plane"][id] = {
+            "points": points,
+            "color": color
+        }
+
+    def add_polyhedron(self, id: str, faces: list, color: str) -> None:
+        """
+        Добавляет многогранник в пространство.
+        :param id: Идентификатор многогранника.
+        :param faces: Список граней многогранника.
+        :param color: Цвет многогранника.
+        """
+        self.space_data["polyhedron"][id] = {
+            "faces": faces,
+            "color": color
+        }
 
     def clear_space(self) -> None:
         """
@@ -61,7 +99,7 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при очистке пространства: {e}")
 
-    def save_space(self, parent_widget: Any, file_path: str | None = None) -> None:
+    def save_space(self, parent_widget: Any) -> None:
         """
         Сохраняет текущее состояние пространства.
         :param parent_widget: Виджет, который будет родителем для диалога.
@@ -87,23 +125,17 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при сохранении пространства: {e}")
 
-    def exit_application(self) -> None:
-        """
-        Завершает работу приложения с автосохранением.
-        """
-        self.save_space()
-        QApplication.quit()
-
     def load_space(self, file_path: str | None = None) -> None:
         """
         Загружает состояние пространства.
-        :param file_path: Путь к файлу (если не указан, используется self.state_file).
+        :param file_path: Путь к файлу.
         """
         try:
-            file_path = file_path or self.state_file
-            self.space = load_state(file_path)
-            if self.space is not None:
+            file_path = file_path
+            loaded_data = load_state(file_path)
+            if loaded_data is not None:
                 self.load_space_called = True
+                self.space_data = loaded_data
                 print(f"Пространство успешно загружено из {file_path}.")
             else:
                 print("Не удалось загрузить пространство.")
@@ -131,3 +163,10 @@ class Engine:
         :return: Текущее пространство (NumPy массив).
         """
         return self.space
+
+    def exit_application(self) -> None:
+        """
+        Завершает работу приложения с автосохранением.
+        """
+        self.save_space()
+        QApplication.quit()

@@ -36,15 +36,15 @@ def create_new_space(main_window: Any = None) -> None:
     :param main_window: Экземпляр MainWindow.
     """
     engine = Engine()
-    engine.initialize_empty_space(dimensions=(10, 10, 10))
+    engine.initialize_empty_space()
     print("Новое пространство создано.")
 
     # Создаем уникальное имя файла с временной меткой
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    save_path = f"saves/space_{timestamp}.json"
-
-    engine.save_space(save_path)
-    print(f"Состояние сохранено в {save_path}.")
+    # timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    # save_path = f"saves/space_{timestamp}.json"
+    #
+    # engine.save_space(save_path)
+    # print(f"Состояние сохранено в {save_path}.")
 
     # Проверяем, что main_window передан
     if main_window is not None:
