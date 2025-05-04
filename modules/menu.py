@@ -1,6 +1,7 @@
 import os
 import sys
-from typing import Any
+from typing import Any, List, Tuple
+import math
 
 from functools import partial
 
@@ -23,14 +24,14 @@ from modules.actions import continue_last_session, create_new_space, load_saved_
 from modules.audio import play_background_music, play_sound_effect
 from modules.engine import Engine, OpenGLWidget
 from modules.input_handler.keyboard import KeyboardHandler
-from modules.tools.modal_dialogs import PointsInputDialog
+from modules.tools.input_dialog import PointsInputDialog
 
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.engine = Engine()  # Создаем экземпляр движка
-        self.opengl = OpenGLWidget() # Создаем экземпляр рендера
+        self.opengl = OpenGLWidget(space_data=self.engine.get_space()) # Создаем экземпляр рендера
 
         # Инициализация обработчика клавиатуры
         self.keyboard_handler = KeyboardHandler(main_window=self)
@@ -315,7 +316,7 @@ class MainWindow(QMainWindow):
         """Обработка нажатия клавиш."""
         key = event.text().upper()  # Преобразуем символ в верхний регистр
         if key:
-            renderer = OpenGLWidget(self.engine.get_space(), keyboard_handler=self.keyboard_handler)
+            renderer = OpenGLWidget(space_data=self.engine.get_space(), keyboard_handler=self.keyboard_handler)
             self.keyboard_handler.set_opengl_widget(renderer)
             self.keyboard_handler.handle_key_press(key)
         super().keyPressEvent(event)  # Вызываем базовый метод для дальнейшей обработки
@@ -405,7 +406,7 @@ class MainWindow(QMainWindow):
         save_action.triggered.connect(partial(self.engine.save_space, self))
 
         load_action = QAction("Load", self)
-        load_action.triggered.connect(self.load_space_from_file)
+        load_action.triggered.connect(self.load_space)
 
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.engine.exit_application)
@@ -421,21 +422,45 @@ class MainWindow(QMainWindow):
         file_menu.addAction(exit_action)
         print("Верхнее меню успешно создано.")
 
+    @staticmethod
+    def sort_points(points: List[Tuple[float, float, float]]) -> List[Tuple[float, float, float]]:
+        # Вычисляем центр
+        centroid = (
+            sum(p[0] for p in points) / len(points),
+            sum(p[1] for p in points) / len(points),
+            sum(p[2] for p in points) / len(points)
+        )
+
+        # Сортируем точки по углу относительно центра
+        def angle_from_centroid(point):
+            return math.atan2(point[1] - centroid[1], point[0] - centroid[0])
+
+        sorted_points = sorted(points, key=angle_from_centroid)
+        return sorted_points
+
     def on_draw_plane_three_points(self):
-        pass
-        # try:
-        #     print("Рисование плоскости через три точки")
-        #     current_widget = self.centralWidget()
-        #     if isinstance(current_widget, OpenGLWidget):
-        #         dialog = PointsInputDialog(current_widget)
-        #         if dialog.exec_() == QDialog.Accepted:
-        #             points = dialog.get_points()
-        #             print(f"Полученные координаты: {points}")
-        #             current_widget.draw_plane(points)
-        #     else:
-        #         print("Текущий центральный виджет не является OpenGLWidget.")
-        # except Exception as e:
-        #     print(f"Ошибка при рисовании плоскости: {e}")
+        try:
+            print("Рисование плоскости через три точки")
+            dialog = PointsInputDialog(self)
+            if dialog.exec_() == QDialog.Accepted:
+                points, color = dialog.get_points_and_color()
+                print(f"Полученные координаты: {points}, цвет: {color}")
+
+                # Вычисляем четвертую точку
+                p1, p2, p3 = points
+                v1 = (p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2])
+                v2 = (p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2])
+                p4 = (p1[0] + v1[0] + v2[0], p1[1] + v1[1] + v2[1], p1[2] + v1[2] + v2[2])
+
+                # Добавляем четвертую точку и сортируем
+                points.append(p4)
+                sorted_points = self.sort_points(points)
+
+                # Добавляем плоскость в движок
+                self.engine.add_plane("plane_id", sorted_points, color)
+                self.opengl.data_space_reload(self.engine.get_space())
+        except Exception as e:
+            print(f"Ошибка при рисовании плоскости: {e}")
 
     def on_draw_plane_point_segment(self):
         pass
@@ -494,7 +519,7 @@ class MainWindow(QMainWindow):
 
             # Создаем новый OpenGL-виджет с загруженным пространством
             renderer = OpenGLWidget(
-                self.engine.get_space(),
+                space_data=self.engine.get_space(),
                 keyboard_handler=self.keyboard_handler,
                 rotation_x=rotation_x,
                 rotation_y=rotation_y,
@@ -522,22 +547,6 @@ class MainWindow(QMainWindow):
         self.remove_main_menu()  # Удаляем верхнее меню
         self.setup_main_buttons()  # Восстанавливаем главное меню с большими кнопками
         print("Возвращение в главное меню.")
-
-    def load_space_from_file(self) -> None:
-        """
-        Загружает пространство из выбранного файла.
-        """
-        options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getOpenFileName(
-            self,
-            "Выберите файл сохранения",
-            "saves/",
-            "JSON Files (*.json);;All Files (*)",
-            options=options
-        )
-        if file_name:
-            self.engine.load_space(file_path=file_name)
-            print(f"Пространство загружено из {file_name}.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

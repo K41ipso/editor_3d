@@ -17,7 +17,12 @@ class Engine:
         """
         Инициализация движка.
         """
-        self.space_data: Any = None  # Текущее состояние пространства
+        self.space_data = {
+            "point": {},
+            "segment": {},
+            "plane": {},
+            "polyhedron": {}
+        }
         self.initialize_empty_space_called = False
         self.load_space_called = False
         print("Движок инициализирован.")
@@ -28,7 +33,7 @@ class Engine:
         :param dimensions: Размеры пространства (x, y, z).
         """
         try:
-            self.space = {
+            self.space_data = {
                 "point": {},
                 "segment": {},
                 "plane": {},
@@ -94,7 +99,7 @@ class Engine:
         Очищает текущее пространство.
         """
         try:
-            self.space = None
+            self.space_data = None
             print("Пространство очищено.")
         except Exception as e:
             print(f"Ошибка при очистке пространства: {e}")
@@ -106,7 +111,7 @@ class Engine:
         :param file_path: Путь к файлу (если не указан, используется уникальное имя).
         """
         try:
-            if self.space is None:
+            if self.space_data is None:
                 raise ValueError("Нечего сохранять: пространство не инициализировано.")
 
             # Создаем уникальное имя файла с временной меткой
@@ -120,7 +125,7 @@ class Engine:
                 # Создаем директорию, если она не существует
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
                 # Сохраняем данные в файл
-                save_state(self.space, file_path)
+                save_state(self.space_data, file_path)
                 print(f"Пространство успешно сохранено в {file_path}.")
         except Exception as e:
             print(f"Ошибка при сохранении пространства: {e}")
@@ -131,14 +136,16 @@ class Engine:
         :param file_path: Путь к файлу.
         """
         try:
-            file_path = file_path
+            print(f"Попытка загрузить пространство из файла: {file_path}")
             loaded_data = load_state(file_path)
+            print(f"loaded_data: {loaded_data}")
             if loaded_data is not None:
                 self.load_space_called = True
                 self.space_data = loaded_data
                 print(f"Пространство успешно загружено из {file_path}.")
+                print(f"что внутри: {self.space_data}")
             else:
-                print("Не удалось загрузить пространство.")
+                print("Не удалось загрузить пространство: данные не были загружены.")
         except FileNotFoundError:
             print(f"Файл {file_path} не найден.")
         except Exception as e:
@@ -149,8 +156,8 @@ class Engine:
         Продолжает работу с последним сохранением.
         """
         try:
-            self.space = load_last_session()
-            if self.space is not None:
+            self.space_data = load_last_session()
+            if self.space_data is not None:
                 print("Продолжение работы с последним сохранением.")
             else:
                 print("Последнее сохранение не найдено.")
@@ -162,7 +169,7 @@ class Engine:
         Возвращает текущее состояние пространства.
         :return: Текущее пространство (NumPy массив).
         """
-        return self.space
+        return self.space_data
 
     def exit_application(self) -> None:
         """

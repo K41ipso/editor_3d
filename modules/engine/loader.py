@@ -27,7 +27,7 @@ def save_state(state: Any, file_path: str = "saves/temp_state.json") -> None:
         print(f"Ошибка при сохранении состояния: {e}")
 
 
-def load_state(file_path: str = "saves/temp_state.json") -> Any | None:
+def load_state(file_path: str = None) -> Any | None:
     """
     Загружает состояние пространства из файла.
     :param file_path: Путь к файлу сохранения.
@@ -40,7 +40,7 @@ def load_state(file_path: str = "saves/temp_state.json") -> Any | None:
             data = json.load(file) # Преобразуем список обратно в NumPy массив
     except Exception as e:
         print(f"Ошибка при загрузке состояния: {e}")
-        return None
+    return data
 
 
 def load_last_session(saves_directory: str = "saves") -> Any | None:

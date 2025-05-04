@@ -35,12 +35,7 @@ class OpenGLWidget(QOpenGLWidget):
         rotation_y: float = 0.0,
         rotation_z: float = 0.0,
         last_mouse_pos: Any = None,
-        mouse_pressed: bool = False,
-        plane_points: Tuple[
-            Tuple[float, float, float],
-            Tuple[float, float, float],
-            Tuple[float, float, float]] =
-        ((0, 0, 0), (1, 0, 0), (0, 1, 0))
+        mouse_pressed: bool = False
     ) -> None:
         super().__init__(parent)
         self.space_data = space_data
@@ -50,8 +45,6 @@ class OpenGLWidget(QOpenGLWidget):
         self.last_mouse_pos = last_mouse_pos
         self.keyboard_handler = keyboard_handler
         self.mouse_pressed = mouse_pressed
-        self.plane_points = plane_points
-        self.b_draw_plane = True
 
     def initializeGL(self) -> None:
         glClearColor(0.1, 0.1, 0.1, 1.0)
@@ -65,6 +58,8 @@ class OpenGLWidget(QOpenGLWidget):
         glMatrixMode(GL_MODELVIEW)
 
     def paintGL(self) -> None:
+        #print(f"Отрисовка: {self.space_data}")
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
 
@@ -79,8 +74,9 @@ class OpenGLWidget(QOpenGLWidget):
         glRotatef(self.rotation_z, 0, 0, 1)
 
         self.draw_coordinate_grid()
-
         self.draw_plane()
+
+        print("Пространство обновлено")
 
     def draw_coordinate_grid(self) -> None:
         glColor3f(0.5, 0.5, 0.5)  # Устанавливаем серый цвет для линий сетки
@@ -99,29 +95,39 @@ class OpenGLWidget(QOpenGLWidget):
 
         glEnd()  # Завершаем определение линий
 
+    def data_space_reload(self, our_data: Any) -> None:
+        self.space_data = our_data
+        print()
+        self.update()
+
     def draw_plane(self) -> None:
+        print("Начало отрисовки плоскости")
+        if not self.space_data or "plane" not in self.space_data:
+            print("Нет данных для отрисовки плоскостей.")
+            return
         try:
-            # Установка цвета и начало рисования
-            glBegin(GL_QUADS)
+            for plane_id, plane_data in self.space_data["plane"].items():
+                points = plane_data["points"]
+                color = plane_data["color"]
 
-            glColor3f(0.0, 0.0, 1.0)
+                if len(points) < 4:
+                    print(f"Недостаточно точек для отрисовки плоскости {plane_id}.")
+                    continue
 
-            glVertex3f(0, 0, 0)
-            glVertex3f(0, 1, 0)
-            glVertex3f(1, 1, 0)
-            glVertex3f(1, 0, 0)
+                # Установка цвета и начало рисования
+                glBegin(GL_QUADS)
+                glColor3f(*color)
 
-            glEnd()
+                for point in points:
+                    glVertex3f(*point)
 
-            print("Плоскость успешно нарисована.")
+                glEnd()
+
+                print(f"Плоскость {plane_id} успешно нарисована.")
         except TypeError as e:
             print(f"Ошибка типа данных при отрисовке плоскости: {e}")
         except Exception as e:
             print(f"Неожиданная ошибка при отрисовке плоскости: {e}")
-
-    def on_draw_plane(self):
-        self.b_draw_plane = True
-        self.update()
 
     def mousePressEvent(self, event: Any) -> None:
         """
