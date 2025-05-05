@@ -25,7 +25,12 @@ class Engine:
         }
         self.initialize_empty_space_called = False
         self.load_space_called = False
+        # Устанавливаем индекс
+        self.props_index = 0
         print("Движок инициализирован.")
+
+    def add_props_index(self) -> None:
+        self.props_index += 1
 
     def initialize_empty_space(self) -> None:
         """
@@ -55,6 +60,7 @@ class Engine:
             "coordinates": coordinates,
             "color": color
         }
+        self.add_props_index()
 
     def add_segment(self, id: str, start: tuple, end: tuple, color: str) -> None:
         """
@@ -69,6 +75,7 @@ class Engine:
             "end": end,
             "color": color
         }
+        self.add_props_index()
 
     def add_plane(self, id: str, points: list, color: str) -> None:
         """
@@ -81,6 +88,7 @@ class Engine:
             "points": points,
             "color": color
         }
+        self.add_props_index()
 
     def add_polyhedron(self, id: str, faces: list, color: str) -> None:
         """
@@ -93,6 +101,7 @@ class Engine:
             "faces": faces,
             "color": color
         }
+        self.add_props_index()
 
     def clear_space(self) -> None:
         """
@@ -142,6 +151,12 @@ class Engine:
             if loaded_data is not None:
                 self.load_space_called = True
                 self.space_data = loaded_data
+                self.props_index = (
+                    len(self.space_data["point"]) +
+                    len(self.space_data["segment"]) +
+                    len(self.space_data["plane"]) +
+                    len(self.space_data["polyhedron"])
+                )
                 print(f"Пространство успешно загружено из {file_path}.")
                 print(f"что внутри: {self.space_data}")
             else:

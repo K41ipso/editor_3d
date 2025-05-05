@@ -2,9 +2,11 @@ import os
 import sys
 from typing import Any, List, Tuple
 import math
+import random
 
 from functools import partial
 
+from PIL.ImagePalette import random
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QIcon, QPalette, QPixmap
 from PyQt5.QtWidgets import (
@@ -445,9 +447,8 @@ class MainWindow(QMainWindow):
                 points, color = dialog.get_points_and_color()
                 print(f"Полученные координаты: {points}, цвет: {color}")
                 sorted_points = self.sort_points(points)
-
                 # Добавляем плоскость в движок
-                self.engine.add_plane("plane_id", sorted_points, color)
+                self.engine.add_plane(f"{self.engine.props_index}", sorted_points, color)
                 self.opengl.data_space_reload(self.engine.get_space())
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
