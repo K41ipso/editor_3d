@@ -27,6 +27,7 @@ from modules.audio import play_background_music, play_sound_effect
 from modules.engine import Engine, OpenGLWidget
 from modules.input_handler.keyboard import KeyboardHandler
 from modules.tools.input_dialog import PointsInputDialog
+from modules.tools.modal_dialogs import PointSegmentInputDialog
 
 
 class MainWindow(QMainWindow):
@@ -448,25 +449,29 @@ class MainWindow(QMainWindow):
                 print(f"Полученные координаты: {points}, цвет: {color}")
                 sorted_points = self.sort_points(points)
                 # Добавляем плоскость в движок
-                self.engine.add_plane(f"{self.engine.props_index}", sorted_points, color)
+                self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
                 self.opengl.data_space_reload(self.engine.get_space())
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
 
     def on_draw_plane_point_segment(self):
-        pass
-        # try:
-        #     self.update_opengl_widget()
-        #     print("Рисование плоскости через точку и отрезок")
-        #     current_widget = self.centralWidget()
-        #     if isinstance(current_widget, OpenGLWidget):
-        #         current_widget.draw_cube()
-        #         current_widget.update()
-        #         print("Куб успешно отрисован")
-        #     else:
-        #         print("Текущий центральный виджет не является OpenGLWidget.")
-        # except Exception as e:
-        #     print(f"Ошибка при рисовании куба: {e}")
+        try:
+            print("Рисование плоскости через точку и отрезок")
+            dialog = PointSegmentInputDialog(self)
+            if dialog.exec_() == QDialog.Accepted:
+                point, start_segment, end_segment, color = dialog.get_data()
+                print(
+                    f"Полученные данные: Точка: {point}, Начало отрезка: {start_segment}, Конец отрезка: {end_segment}, Цвет: {color}")
+
+                # Преобразуем данные в список точек
+                points = [point, start_segment, end_segment]
+                sorted_points = self.sort_points(points)
+
+                # Добавляем плоскость в движок
+                self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
+                self.opengl.data_space_reload(self.engine.get_space())
+        except Exception as e:
+            print(f"Ошибка при рисовании плоскости: {e}")
 
     def on_draw_plane_point_parallel(self):
         # Логика для "Точку и параллель"
@@ -515,7 +520,7 @@ class MainWindow(QMainWindow):
                 rotation_x=rotation_x,
                 rotation_y=rotation_y,
                 last_mouse_pos=last_mouse_pos,
-                mouse_pressed=True
+                mouse_pressed=mouse_pressed
             )
             self.keyboard_handler.set_opengl_widget(renderer)
             self.setCentralWidget(renderer)
