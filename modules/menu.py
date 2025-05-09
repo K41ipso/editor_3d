@@ -523,6 +523,7 @@ class MainWindow(QMainWindow):
         """
         rotation_x = 0.0
         rotation_y = 0.0
+        rotation_z = 0.0
         last_mouse_pos = None
         mouse_pressed = False
         try:
@@ -532,6 +533,7 @@ class MainWindow(QMainWindow):
                 # Сохраняем углы поворота и положение мыши
                 rotation_x = old_widget.rotation_x
                 rotation_y = old_widget.rotation_y
+                rotation_z = old_widget.rotation_z
                 last_mouse_pos = old_widget.last_mouse_pos
                 mouse_pressed = old_widget.mouse_pressed
                 old_widget.deleteLater()
@@ -542,6 +544,7 @@ class MainWindow(QMainWindow):
                 keyboard_handler=self.keyboard_handler,
                 rotation_x=rotation_x,
                 rotation_y=rotation_y,
+                rotation_z=rotation_z,
                 last_mouse_pos=last_mouse_pos,
                 mouse_pressed=mouse_pressed
             )
