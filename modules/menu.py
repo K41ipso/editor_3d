@@ -27,7 +27,7 @@ from modules.audio import play_background_music, play_sound_effect
 from modules.engine import Engine, OpenGLWidget
 from modules.input_handler.keyboard import KeyboardHandler
 from modules.tools.input_dialog import PointsInputDialog
-from modules.tools.modal_dialogs import PointSegmentInputDialog
+from modules.tools.modal_dialogs import PointSegmentInputDialog, PointParallelInputDialog
 
 
 class MainWindow(QMainWindow):
@@ -474,8 +474,31 @@ class MainWindow(QMainWindow):
             print(f"Ошибка при рисовании плоскости: {e}")
 
     def on_draw_plane_point_parallel(self):
-        # Логика для "Точку и параллель"
-        print("Рисование плоскости через точку и параллель")
+        try:
+            print("Рисование плоскости через точку и параллельной другой плоскости")
+            dialog = PointParallelInputDialog(self)
+            if dialog.exec_() == QDialog.Accepted:
+                point, plane_points, color = dialog.get_data()
+                print(f"Полученные данные: Точка: {point}, Точки плоскости: {plane_points}, Цвет: {color}")
+
+                # Вычисляем уравнение исходной плоскости
+                p1, p2, p3 = plane_points
+                v1 = (p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2])  # Первый вектор на исходной плоскости
+                v2 = (p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2])  # Второй вектор на исходной плоскости
+
+                # Новая плоскость проходит через точку P
+                new_plane_points = [
+                    point,
+                    (point[0] + v1[0], point[1] + v1[1], point[2] + v1[2]),  # Смещение вдоль v1
+                    (point[0] + v2[0], point[1] + v2[1], point[2] + v2[2])  # Смещение вдоль v2
+                ]
+
+                # Добавляем плоскость в движок
+                sorted_points = self.sort_points(new_plane_points)
+                self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
+                self.opengl.data_space_reload(self.engine.get_space())
+        except Exception as e:
+            print(f"Ошибка при рисовании плоскости: {e}")
 
     def load_space_from_file(self) -> None:
         """

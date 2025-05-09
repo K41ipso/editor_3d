@@ -7,7 +7,7 @@ from typing import List, Tuple
 class PointsInputDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Введите координаты точек и выберите цвет")
+        self.setWindowTitle("Рисование плоскости по трем точкам")
         self.layout = QVBoxLayout(self)
 
         # Добавляем поля для ввода координат

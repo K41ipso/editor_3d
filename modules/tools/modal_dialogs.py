@@ -182,3 +182,98 @@ class PointSegmentInputDialog(QDialog):
         color = color_map[color_name]
 
         return point, start_segment, end_segment, color
+
+class PointParallelInputDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Рисование плоскости через точку и параллельную плоскость")
+        self.layout = QVBoxLayout(self)
+
+        # Валидатор для ввода чисел
+        validator = QDoubleValidator()
+        validator.setNotation(QDoubleValidator.StandardNotation)
+        validator.setRange(-999.0, 999.0)
+
+        # Поле для точки P
+        self.point_layout = QHBoxLayout()
+        self.point_x = QLineEdit(self)
+        self.point_y = QLineEdit(self)
+        self.point_z = QLineEdit(self)
+        for field in (self.point_x, self.point_y, self.point_z):
+            field.setValidator(validator)
+            field.setMaxLength(4)
+        self.point_layout.addWidget(QLabel("Координаты точки:"))
+        self.point_layout.addWidget(self.point_x)
+        self.point_layout.addWidget(self.point_y)
+        self.point_layout.addWidget(self.point_z)
+        self.layout.addLayout(self.point_layout)
+
+        # Заголовок для координат параллельной плоскости
+        self.layout.addWidget(QLabel("Координаты параллельной плоскости:"))
+
+        # Поля для трёх точек исходной плоскости
+        self.plane_points = []
+        labels = ["Точка 1:", "Точка 2:", "Точка 3:"]
+        for i, label_text in enumerate(labels):
+            h_layout = QHBoxLayout()
+            x_field = QLineEdit(self)
+            y_field = QLineEdit(self)
+            z_field = QLineEdit(self)
+            for field in (x_field, y_field, z_field):
+                field.setValidator(validator)
+                field.setMaxLength(4)
+            h_layout.addWidget(QLabel(label_text))
+            h_layout.addWidget(x_field)
+            h_layout.addWidget(y_field)
+            h_layout.addWidget(z_field)
+            self.layout.addLayout(h_layout)
+            self.plane_points.append((x_field, y_field, z_field))
+
+        # Выпадающий список для выбора цвета
+        self.color_combo = QComboBox(self)
+        self.color_combo.addItems([
+            "Красный", "Зеленый", "Синий", "Желтый", "Фиолетовый",
+            "Оранжевый", "Розовый", "Коричневый", "Черный", "Белый"
+        ])
+        self.layout.addWidget(QLabel("Выберите цвет:"))
+        self.layout.addWidget(self.color_combo)
+
+        # Кнопка подтверждения
+        self.submit_button = QPushButton("Отправить", self)
+        self.submit_button.clicked.connect(self.accept)
+        self.layout.addWidget(self.submit_button)
+
+    def get_data(self):
+        # Получаем координаты точки P
+        point = (
+            float(self.point_x.text()),
+            float(self.point_y.text()),
+            float(self.point_z.text())
+        )
+
+        # Получаем координаты трёх точек исходной плоскости
+        plane_points = []
+        for x_field, y_field, z_field in self.plane_points:
+            plane_points.append((
+                float(x_field.text()),
+                float(y_field.text()),
+                float(z_field.text())
+            ))
+
+        # Получаем цвет
+        color_name = self.color_combo.currentText()
+        color_map = {
+            "Красный": (1.0, 0.0, 0.0),
+            "Зеленый": (0.0, 1.0, 0.0),
+            "Синий": (0.0, 0.0, 1.0),
+            "Желтый": (1.0, 1.0, 0.0),
+            "Фиолетовый": (0.5, 0.0, 0.5),
+            "Оранжевый": (1.0, 0.5, 0.0),
+            "Розовый": (1.0, 0.0, 1.0),
+            "Коричневый": (0.6, 0.3, 0.0),
+            "Черный": (0.0, 0.0, 0.0),
+            "Белый": (1.0, 1.0, 1.0)
+        }
+        color = color_map[color_name]
+
+        return point, plane_points, color
