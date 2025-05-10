@@ -79,6 +79,7 @@ class OpenGLWidget(QOpenGLWidget):
         print("Пространство обновлено")
 
     def draw_coordinate_grid(self) -> None:
+        # Рисуем серую сетку по осям X и Y
         glColor3f(0.5, 0.5, 0.5)  # Устанавливаем серый цвет для линий сетки
         glBegin(GL_LINES)  # Начинаем определение линий
         grid_size = 100  # Размер сетки
@@ -95,9 +96,29 @@ class OpenGLWidget(QOpenGLWidget):
 
         glEnd()  # Завершаем определение линий
 
+        # Рисуем координатные оси X, Y, Z с цветовым выделением
+        axis_length = 100  # Длина осей
+        glBegin(GL_LINES)
+
+        # Ось X (красная)
+        glColor3f(1.0, 0.0, 0.0)  # Красный цвет
+        glVertex3f(0, 0, 0)  # Начало оси X
+        glVertex3f(axis_length, 0, 0)  # Конец оси X
+
+        # Ось Y (зеленая)
+        glColor3f(0.0, 1.0, 0.0)  # Зеленый цвет
+        glVertex3f(0, 0, 0)  # Начало оси Y
+        glVertex3f(0, axis_length, 0)  # Конец оси Y
+
+        # Ось Z (синяя)
+        glColor3f(0.0, 0.0, 1.0)  # Синий цвет
+        glVertex3f(0, 0, 0)  # Начало оси Z
+        glVertex3f(0, 0, axis_length)  # Конец оси Z
+
+        glEnd()  # Завершаем определение линий
+
     def data_space_reload(self, our_data: Any) -> None:
         self.space_data = our_data
-        print()
         self.update()
 
     def draw_plane(self) -> None:

@@ -26,6 +26,7 @@ from modules.actions import continue_last_session, create_new_space, load_saved_
 from modules.audio import play_background_music, play_sound_effect
 from modules.engine import Engine, OpenGLWidget
 from modules.input_handler.keyboard import KeyboardHandler
+from modules.tools.const import POLY
 from modules.tools.input_dialog import PointsInputDialog
 from modules.tools.modal_dialogs import PointSegmentInputDialog, PointParallelInputDialog
 
@@ -404,19 +405,22 @@ class MainWindow(QMainWindow):
         # Меню "File"
         file_menu = menu_bar.addMenu("File")
 
-        save_action = QAction("Save", self)
+        save_action = QAction("Сохранить", self)
         save_action.triggered.connect(partial(self.engine.save_space, self))
 
-        load_action = QAction("Load", self)
+        load_action = QAction("Загрузить", self)
         load_action.triggered.connect(self.load_space)
 
-        exit_action = QAction("Exit", self)
+        exit_action = QAction("Выход", self)
         exit_action.triggered.connect(self.engine.exit_application)
 
         draw_planes_menu = menu_bar.addMenu("Рисование плоскостей через")
         draw_planes_menu.addAction("Три точки", self.on_draw_plane_three_points)
         draw_planes_menu.addAction("Точку и отрезок", self.on_draw_plane_point_segment)
         draw_planes_menu.addAction("Точку и параллель", self.on_draw_plane_point_parallel)
+
+        draw_polyhedron_menu = menu_bar.addMenu("Рисование многогранников")
+        draw_polyhedron_menu.addAction("Нарисовать ежика", self.on_draw_polyhedron)
 
         file_menu.addAction(save_action)
         file_menu.addAction(load_action)
@@ -450,7 +454,8 @@ class MainWindow(QMainWindow):
                 sorted_points = self.sort_points(points)
                 # Добавляем плоскость в движок
                 self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
-                self.opengl.data_space_reload(self.engine.get_space())
+                #self.opengl.data_space_reload(self.engine.get_space())
+                self.update_opengl_widget()
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
 
@@ -469,7 +474,8 @@ class MainWindow(QMainWindow):
 
                 # Добавляем плоскость в движок
                 self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
-                self.opengl.data_space_reload(self.engine.get_space())
+                #self.opengl.data_space_reload(self.engine.get_space())
+                self.update_opengl_widget()
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
 
@@ -496,9 +502,21 @@ class MainWindow(QMainWindow):
                 # Добавляем плоскость в движок
                 sorted_points = self.sort_points(new_plane_points)
                 self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
-                self.opengl.data_space_reload(self.engine.get_space())
+                #self.opengl.data_space_reload(self.engine.get_space())
+                self.update_opengl_widget()
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
+
+    def on_draw_polyhedron(self) -> None:
+        """
+        Рисует подготовленный многогранник в програме.
+        """
+        print("Начало обработки ежика.")
+        for key, element in POLY.items():
+            print(f"{self.engine.space_data['props_index']}", element["points"], element["color"])
+            self.engine.add_plane(f"{self.engine.space_data['props_index']}", element["points"], element["color"])
+        #self.opengl.data_space_reload(self.engine.get_space())
+        self.update_opengl_widget()
 
     def load_space_from_file(self) -> None:
         """
