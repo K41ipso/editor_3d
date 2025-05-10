@@ -1,9 +1,7 @@
 import os
 from typing import Any
 
-import numpy as np
-
-from PyQt5.QtWidgets import QApplication, QInputDialog
+from PyQt5.QtWidgets import QApplication, QInputDialog  # type: ignore
 
 from .loader import load_last_session, load_state, save_state
 
@@ -17,13 +15,7 @@ class Engine:
         """
         Инициализация движка.
         """
-        self.space_data = {
-            "point": {},
-            "segment": {},
-            "plane": {},
-            "polyhedron": {},
-            "props_index": '0'
-        }
+        self.space_data: Any = {"point": {}, "segment": {}, "plane": {}, "polyhedron": {}, "props_index": '0'}
         self.initialize_empty_space_called = False
         self.load_space_called = False
         # Устанавливаем индекс
@@ -31,7 +23,7 @@ class Engine:
         print("Движок инициализирован.")
 
     def add_props_index(self) -> None:
-        #self.props_index += 1
+        # self.props_index += 1
         now_prop_index = int(self.space_data['props_index']) + 1
         self.space_data['props_index'] = f"{now_prop_index}"
 
@@ -41,32 +33,23 @@ class Engine:
         :param dimensions: Размеры пространства (x, y, z).
         """
         try:
-            self.space_data = {
-                "point": {},
-                "segment": {},
-                "plane": {},
-                "polyhedron": {},
-                "props_index": '0'
-            }
+            self.space_data = {"point": {}, "segment": {}, "plane": {}, "polyhedron": {}, "props_index": '0'}
             self.initialize_empty_space_called = True
-            print(f"Создано новое пространство.")
+            print("Создано новое пространство.")
         except Exception as e:
             print(f"Ошибка при создании пространства: {e}")
 
-    def add_point(self, id: str, coordinates: tuple, color: str) -> None:
+    def add_point(self, id: str, coordinates: Any, color: str) -> None:
         """
         Добавляет точку в пространство.
         :param id: Идентификатор точки.
         :param coordinates: Координаты точки.
         :param color: Цвет точки.
         """
-        self.space_data["point"][id] = {
-            "coordinates": coordinates,
-            "color": color
-        }
+        self.space_data["point"][id] = {"coordinates": coordinates, "color": color}
         self.add_props_index()
 
-    def add_segment(self, id: str, start: tuple, end: tuple, color: str) -> None:
+    def add_segment(self, id: str, start: Any, end: Any, color: str) -> None:
         """
         Добавляет сегмент в пространство.
         :param id: Идентификатор сегмента.
@@ -74,37 +57,27 @@ class Engine:
         :param end: Конечная точка сегмента.
         :param color: Цвет сегмента.
         """
-        self.space_data["segment"][id] = {
-            "start": start,
-            "end": end,
-            "color": color
-        }
+        self.space_data["segment"][id] = {"start": start, "end": end, "color": color}
         self.add_props_index()
 
-    def add_plane(self, id: str, points: list, color: str) -> None:
+    def add_plane(self, id: str, points: Any, color: Any) -> None:
         """
         Добавляет плоскость в пространство.
         :param id: Идентификатор плоскости.
         :param points: Список точек, определяющих плоскость.
         :param color: Цвет плоскости.
         """
-        self.space_data["plane"][id] = {
-            "points": points,
-            "color": color
-        }
+        self.space_data["plane"][id] = {"points": points, "color": color}
         self.add_props_index()
 
-    def add_polyhedron(self, id: str, faces: list, color: str) -> None:
+    def add_polyhedron(self, id: str, faces: Any, color: str) -> None:
         """
         Добавляет многогранник в пространство.
         :param id: Идентификатор многогранника.
         :param faces: Список граней многогранника.
         :param color: Цвет многогранника.
         """
-        self.space_data["polyhedron"][id] = {
-            "faces": faces,
-            "color": color
-        }
+        self.space_data["polyhedron"][id] = {"faces": faces, "color": color}
         self.add_props_index()
 
     def clear_space(self) -> None:
@@ -112,7 +85,7 @@ class Engine:
         Очищает текущее пространство.
         """
         try:
-            self.space_data = None
+            self.space_data = {"point": {}, "segment": {}, "plane": {}, "polyhedron": {}, "props_index": '0'}
             print("Пространство очищено.")
         except Exception as e:
             print(f"Ошибка при очистке пространства: {e}")
@@ -129,9 +102,7 @@ class Engine:
             if not file_name:
                 # Создаем уникальное имя файла с временной меткой
                 file_name, _ = QInputDialog.getText(
-                    parent_widget,  # Передаем виджет, а не self
-                    "Сохранить пространство",
-                    "Введите имя файла:"
+                    parent_widget, "Сохранить пространство", "Введите имя файла:"  # Передаем виджет, а не self
                 )
             if file_name:
                 file_path = f"saves/{file_name}.json"
@@ -143,7 +114,7 @@ class Engine:
         except Exception as e:
             print(f"Ошибка при сохранении пространства: {e}")
 
-    def load_space(self, file_path: str | None = None) -> None:
+    def load_space(self, file_path: str) -> None:
         """
         Загружает состояние пространства.
         :param file_path: Путь к файлу.
@@ -189,5 +160,4 @@ class Engine:
         """
         Завершает работу приложения с автосохранением.
         """
-        self.save_space()
-        QApplication.quit()
+        QApplication.quit()  # type: ignore

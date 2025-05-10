@@ -1,8 +1,11 @@
+from typing import Any
+
 from PyQt5.QtGui import QDoubleValidator
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QHBoxLayout, QLabel, QComboBox
+from PyQt5.QtWidgets import QComboBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout  # type: ignore
+
 
 class PointsInputDialog(QDialog):
-    def __init__(self, parent=None, ):
+    def __init__(self, parent: Any = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Введите координаты трех точек")
         self.layout = QVBoxLayout(self)
@@ -66,18 +69,19 @@ class PointsInputDialog(QDialog):
         self.layout.addLayout(self.point3_layout)
 
         self.submit_button = QPushButton("Отправить", self)
-        self.submit_button.clicked.connect(self.accept)
+        self.submit_button.clicked.connect(self.accept)  # type: ignore
         self.layout.addWidget(self.submit_button)
 
-    def get_points(self):
+    def get_points(self) -> (tuple)[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]:
         return (
             (float(self.point1_x.text()), float(self.point1_y.text()), float(self.point1_z.text())),
             (float(self.point2_x.text()), float(self.point2_y.text()), float(self.point2_z.text())),
-            (float(self.point3_x.text()), float(self.point3_y.text()), float(self.point3_z.text()))
+            (float(self.point3_x.text()), float(self.point3_y.text()), float(self.point3_z.text())),
         )
 
+
 class PointSegmentInputDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Any = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Рисование плоскости через точку и отрезок")
         self.layout = QVBoxLayout(self)
@@ -131,39 +135,37 @@ class PointSegmentInputDialog(QDialog):
 
         # Выпадающий список для выбора цвета
         self.color_combo = QComboBox(self)
-        self.color_combo.addItems([
-            "Красный", "Зеленый", "Синий", "Желтый", "Фиолетовый",
-            "Оранжевый", "Розовый", "Коричневый", "Черный", "Белый"
-        ])
+        self.color_combo.addItems(
+            [
+                "Красный",
+                "Зеленый",
+                "Синий",
+                "Желтый",
+                "Фиолетовый",
+                "Оранжевый",
+                "Розовый",
+                "Коричневый",
+                "Черный",
+                "Белый",
+            ]
+        )
         self.layout.addWidget(QLabel("Выберите цвет:"))
         self.layout.addWidget(self.color_combo)
 
         # Кнопка подтверждения
         self.submit_button = QPushButton("Отправить", self)
-        self.submit_button.clicked.connect(self.accept)
+        self.submit_button.clicked.connect(self.accept)  # type: ignore
         self.layout.addWidget(self.submit_button)
 
-    def get_data(self):
+    def get_data(self) -> Any:
         # Получаем координаты точки P
-        point = (
-            float(self.point_x.text()),
-            float(self.point_y.text()),
-            float(self.point_z.text())
-        )
+        point = (float(self.point_x.text()), float(self.point_y.text()), float(self.point_z.text()))
 
         # Получаем координаты начала отрезка A
-        start_segment = (
-            float(self.start_x.text()),
-            float(self.start_y.text()),
-            float(self.start_z.text())
-        )
+        start_segment = (float(self.start_x.text()), float(self.start_y.text()), float(self.start_z.text()))
 
         # Получаем координаты конца отрезка B
-        end_segment = (
-            float(self.end_x.text()),
-            float(self.end_y.text()),
-            float(self.end_z.text())
-        )
+        end_segment = (float(self.end_x.text()), float(self.end_y.text()), float(self.end_z.text()))
 
         # Получаем цвет
         color_name = self.color_combo.currentText()
@@ -177,14 +179,15 @@ class PointSegmentInputDialog(QDialog):
             "Розовый": (1.0, 0.0, 1.0),
             "Коричневый": (0.6, 0.3, 0.0),
             "Черный": (0.0, 0.0, 0.0),
-            "Белый": (1.0, 1.0, 1.0)
+            "Белый": (1.0, 1.0, 1.0),
         }
         color = color_map[color_name]
 
         return point, start_segment, end_segment, color
 
+
 class PointParallelInputDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Any = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Рисование плоскости через точку и параллельную плоскость")
         self.layout = QVBoxLayout(self)
@@ -231,34 +234,36 @@ class PointParallelInputDialog(QDialog):
 
         # Выпадающий список для выбора цвета
         self.color_combo = QComboBox(self)
-        self.color_combo.addItems([
-            "Красный", "Зеленый", "Синий", "Желтый", "Фиолетовый",
-            "Оранжевый", "Розовый", "Коричневый", "Черный", "Белый"
-        ])
+        self.color_combo.addItems(
+            [
+                "Красный",
+                "Зеленый",
+                "Синий",
+                "Желтый",
+                "Фиолетовый",
+                "Оранжевый",
+                "Розовый",
+                "Коричневый",
+                "Черный",
+                "Белый",
+            ]
+        )
         self.layout.addWidget(QLabel("Выберите цвет:"))
         self.layout.addWidget(self.color_combo)
 
         # Кнопка подтверждения
         self.submit_button = QPushButton("Отправить", self)
-        self.submit_button.clicked.connect(self.accept)
+        self.submit_button.clicked.connect(self.accept)  # type: ignore
         self.layout.addWidget(self.submit_button)
 
-    def get_data(self):
+    def get_data(self) -> Any:
         # Получаем координаты точки P
-        point = (
-            float(self.point_x.text()),
-            float(self.point_y.text()),
-            float(self.point_z.text())
-        )
+        point = (float(self.point_x.text()), float(self.point_y.text()), float(self.point_z.text()))
 
         # Получаем координаты трёх точек исходной плоскости
         plane_points = []
         for x_field, y_field, z_field in self.plane_points:
-            plane_points.append((
-                float(x_field.text()),
-                float(y_field.text()),
-                float(z_field.text())
-            ))
+            plane_points.append((float(x_field.text()), float(y_field.text()), float(z_field.text())))
 
         # Получаем цвет
         color_name = self.color_combo.currentText()
@@ -272,7 +277,7 @@ class PointParallelInputDialog(QDialog):
             "Розовый": (1.0, 0.0, 1.0),
             "Коричневый": (0.6, 0.3, 0.0),
             "Черный": (0.0, 0.0, 0.0),
-            "Белый": (1.0, 1.0, 1.0)
+            "Белый": (1.0, 1.0, 1.0),
         }
         color = color_map[color_name]
 

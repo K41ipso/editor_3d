@@ -28,3 +28,6 @@ htmlcov/
 venv/
 .env/
 .venv/
+
+# Исключение файлов сохранения
+saves/

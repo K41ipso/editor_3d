@@ -1,8 +1,11 @@
-from PyQt5.QtWidgets import QToolBar, QAction, QLabel
+from typing import Any
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QAction, QLabel, QToolBar
+
 
 class EditorToolBar(QToolBar):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Any = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Editor Toolbar")
 
@@ -24,20 +27,22 @@ class EditorToolBar(QToolBar):
         self.add_action("Прямых")
         self.add_action("Плоскостей")
 
-    def add_label(self, text):
+    def add_label(self, text: str) -> None:
         label = QLabel(text)
         label.setAlignment(Qt.AlignCenter)  # Центрируем текст
-        label.setStyleSheet("""
+        label.setStyleSheet(
+            """
             background-color: #555;  # Серый фон
             color: white;            # Белый текст
             font-weight: bold;       # Жирный шрифт
             font-size: 14px;         # Размер шрифта
             padding: 5px;            # Отступы
-        """)
+        """
+        )
         self.addWidget(label)
 
-    def add_action(self, text, callback=None):
+    def add_action(self, text: str, callback: Any = None) -> None:
         action = QAction(text, self)
         if callback:
-            action.triggered.connect(callback)
+            action.triggered.connect(callback)  # type: ignore
         self.addAction(action)

@@ -1,11 +1,11 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QComboBox, QPushButton, QLabel, QLineEdit, QHBoxLayout
-from PyQt5.QtGui import QDoubleValidator
+from typing import Any, List, Tuple
 
-from typing import List, Tuple
+from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtWidgets import QComboBox, QDialog, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout  # type: ignore
 
 
 class PointsInputDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Any = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Рисование плоскости по трем точкам")
         self.layout = QVBoxLayout(self)
@@ -29,16 +29,26 @@ class PointsInputDialog(QDialog):
 
         # Добавляем выпадающий список для выбора цвета
         self.color_combo = QComboBox(self)
-        self.color_combo.addItems([
-            "Красный", "Зеленый", "Синий", "Желтый", "Фиолетовый",
-            "Оранжевый", "Розовый", "Коричневый", "Черный", "Белый"
-        ])
+        self.color_combo.addItems(
+            [
+                "Красный",
+                "Зеленый",
+                "Синий",
+                "Желтый",
+                "Фиолетовый",
+                "Оранжевый",
+                "Розовый",
+                "Коричневый",
+                "Черный",
+                "Белый",
+            ]
+        )
         self.layout.addWidget(QLabel("Выберите цвет:"))
         self.layout.addWidget(self.color_combo)
 
         # Кнопка подтверждения
         self.ok_button = QPushButton("OK", self)
-        self.ok_button.clicked.connect(self.accept)
+        self.ok_button.clicked.connect(self.accept)  # type: ignore
         self.layout.addWidget(self.ok_button)
 
     def get_points_and_color(self) -> Tuple[List[Tuple[float, float, float]], Tuple[float, float, float]]:
@@ -61,7 +71,7 @@ class PointsInputDialog(QDialog):
             "Розовый": (1.0, 0.0, 1.0),
             "Коричневый": (0.6, 0.3, 0.0),
             "Черный": (0.0, 0.0, 0.0),
-            "Белый": (1.0, 1.0, 1.0)
+            "Белый": (1.0, 1.0, 1.0),
         }
         color = color_map[color_name]
 

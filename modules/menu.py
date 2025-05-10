@@ -1,25 +1,22 @@
+import math
 import os
 import sys
-from typing import Any, List, Tuple
-import math
-import random
-
 from functools import partial
+from typing import Any, List, Tuple
 
-from PIL.ImagePalette import random
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QIcon, QPalette, QPixmap
-from PyQt5.QtWidgets import (
+from PyQt5.QtWidgets import (  # type: ignore
     QAction,
     QApplication,
+    QDialog,
+    QFileDialog,
     QMainWindow,
     QMenu,
     QPushButton,
     QSystemTrayIcon,
     QVBoxLayout,
     QWidget,
-    QFileDialog,
-    QDialog
 )
 
 from modules.actions import continue_last_session, create_new_space, load_saved_space
@@ -28,14 +25,14 @@ from modules.engine import Engine, OpenGLWidget
 from modules.input_handler.keyboard import KeyboardHandler
 from modules.tools.const import POLY
 from modules.tools.input_dialog import PointsInputDialog
-from modules.tools.modal_dialogs import PointSegmentInputDialog, PointParallelInputDialog
+from modules.tools.modal_dialogs import PointParallelInputDialog, PointSegmentInputDialog
 
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.engine = Engine()  # Создаем экземпляр движка
-        self.opengl = OpenGLWidget(space_data=self.engine.get_space()) # Создаем экземпляр рендера
+        self.opengl = OpenGLWidget(space_data=self.engine.get_space())  # Создаем экземпляр рендера
 
         # Инициализация обработчика клавиатуры
         self.keyboard_handler = KeyboardHandler(main_window=self)
@@ -82,7 +79,7 @@ class MainWindow(QMainWindow):
         exit_button.clicked.connect(self.close)  # type: ignore[attr-defined]
 
         # Воспроизведение фоновой музыки
-        play_background_music("menu_music_e1m1.mp3", volume=0)
+        play_background_music("menu_music_e1m1.mp3", volume=0.1)
 
     def setup_window_icon(self) -> None:
         """
@@ -92,24 +89,10 @@ class MainWindow(QMainWindow):
             # Определяем путь к иконке в зависимости от платформы
             if sys.platform == "win32":  # Для Windows
                 icon_path = os.path.normpath(
-                    os.path.join(
-                        os.path.dirname(__file__),
-                        "..",
-                        "resources",
-                        "images",
-                        "app_icon_win.ico"
-                    )
+                    os.path.join(os.path.dirname(__file__), "..", "resources", "images", "app_icon_win.ico")
                 )
             else:  # Для macOS/Linux
-                icon_path = (
-                    os.path.join(
-                        os.path.dirname(__file__),
-                        "..",
-                        "resources",
-                        "images",
-                        "app_icon_mac.png"
-                    )
-                )
+                icon_path = os.path.join(os.path.dirname(__file__), "..", "resources", "images", "app_icon_mac.png")
 
             # Проверяем существование файла
             if not os.path.exists(icon_path):
@@ -151,18 +134,11 @@ class MainWindow(QMainWindow):
         """
         try:
             # Абсолютный путь к иконке
-            icon_path = os.path.abspath(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    "../resources/images/app_icon_win.ico"
-                )
-            )
+            icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../resources/images/app_icon_win.ico"))
 
             # Проверяем существование файла
             if not os.path.exists(icon_path):
-                raise FileNotFoundError(
-                    f"Иконка не найдена по пути {icon_path}"
-                )
+                raise FileNotFoundError(f"Иконка не найдена по пути {icon_path}")
 
             # Загружаем иконку
             icon = QIcon(icon_path)
@@ -222,15 +198,7 @@ class MainWindow(QMainWindow):
         try:
             # Формируем путь к изображению
             script_dir = os.path.dirname(os.path.abspath(__file__))
-            image_path = os.path.normpath(
-                os.path.join(
-                    script_dir,
-                    "..",
-                    "resources",
-                    "images",
-                    image_name
-                )
-            )
+            image_path = os.path.normpath(os.path.join(script_dir, "..", "resources", "images", image_name))
 
             # Проверяем существование файла
             if not os.path.exists(image_path):
@@ -323,9 +291,10 @@ class MainWindow(QMainWindow):
             renderer = OpenGLWidget(space_data=self.engine.get_space(), keyboard_handler=self.keyboard_handler)
             self.keyboard_handler.set_opengl_widget(renderer)
             self.keyboard_handler.handle_key_press(key)
-        super().keyPressEvent(event)  # Вызываем базовый метод для дальнейшей обработки
+        # Вызываем базовый метод для дальнейшей обработки
+        super().keyPressEvent(event)  # type: ignore
 
-    def set_is_edit_mode_true(self):
+    def set_is_edit_mode_true(self) -> None:
         self.is_edit_mode = True
 
     def setup_main_buttons(self) -> None:
@@ -406,13 +375,14 @@ class MainWindow(QMainWindow):
         file_menu = menu_bar.addMenu("File")
 
         save_action = QAction("Сохранить", self)
-        save_action.triggered.connect(partial(self.engine.save_space, self))
+        save_action.triggered.connect(partial(self.engine.save_space, self))  # type: ignore
 
         load_action = QAction("Загрузить", self)
-        load_action.triggered.connect(self.load_space)
+        load_action.triggered.connect(self.load_space)  # type: ignore
 
         exit_action = QAction("Выход", self)
-        exit_action.triggered.connect(self.engine.exit_application)
+        exit_action.triggered.connect(partial(self.engine.save_space, self))  # type: ignore
+        exit_action.triggered.connect(self.engine.exit_application)  # type: ignore
 
         draw_planes_menu = menu_bar.addMenu("Рисование плоскостей через")
         draw_planes_menu.addAction("Три точки", self.on_draw_plane_three_points)
@@ -434,39 +404,42 @@ class MainWindow(QMainWindow):
         centroid = (
             sum(p[0] for p in points) / len(points),
             sum(p[1] for p in points) / len(points),
-            sum(p[2] for p in points) / len(points)
+            sum(p[2] for p in points) / len(points),
         )
 
         # Сортируем точки по углу относительно центра
-        def angle_from_centroid(point):
+        def angle_from_centroid(point: Any) -> Any:
             return math.atan2(point[1] - centroid[1], point[0] - centroid[0])
 
         sorted_points = sorted(points, key=angle_from_centroid)
         return sorted_points
 
-    def on_draw_plane_three_points(self):
+    def on_draw_plane_three_points(self) -> None:
         try:
             print("Рисование плоскости через три точки")
             dialog = PointsInputDialog(self)
-            if dialog.exec_() == QDialog.Accepted:
+            if dialog.exec_() == QDialog.Accepted:  # type: ignore
                 points, color = dialog.get_points_and_color()
                 print(f"Полученные координаты: {points}, цвет: {color}")
                 sorted_points = self.sort_points(points)
                 # Добавляем плоскость в движок
                 self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
-                #self.opengl.data_space_reload(self.engine.get_space())
+                # self.opengl.data_space_reload(self.engine.get_space())
                 self.update_opengl_widget()
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
 
-    def on_draw_plane_point_segment(self):
+    def on_draw_plane_point_segment(self) -> None:
         try:
             print("Рисование плоскости через точку и отрезок")
             dialog = PointSegmentInputDialog(self)
-            if dialog.exec_() == QDialog.Accepted:
-                point, start_segment, end_segment, color = dialog.get_data()
+            if dialog.exec_() == QDialog.Accepted:  # type: ignore
+                (point, start_segment, end_segment, color) = dialog.get_data()
                 print(
-                    f"Полученные данные: Точка: {point}, Начало отрезка: {start_segment}, Конец отрезка: {end_segment}, Цвет: {color}")
+                    f"Полученные данные: Точка: {point}, \
+                    Начало отрезка: {start_segment}, \
+                    Конец отрезка: {end_segment}, Цвет: {color}"
+                )
 
                 # Преобразуем данные в список точек
                 points = [point, start_segment, end_segment]
@@ -474,16 +447,16 @@ class MainWindow(QMainWindow):
 
                 # Добавляем плоскость в движок
                 self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
-                #self.opengl.data_space_reload(self.engine.get_space())
+                # self.opengl.data_space_reload(self.engine.get_space())
                 self.update_opengl_widget()
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
 
-    def on_draw_plane_point_parallel(self):
+    def on_draw_plane_point_parallel(self) -> None:
         try:
             print("Рисование плоскости через точку и параллельной другой плоскости")
             dialog = PointParallelInputDialog(self)
-            if dialog.exec_() == QDialog.Accepted:
+            if dialog.exec_() == QDialog.Accepted:  # type: ignore
                 point, plane_points, color = dialog.get_data()
                 print(f"Полученные данные: Точка: {point}, Точки плоскости: {plane_points}, Цвет: {color}")
 
@@ -496,13 +469,13 @@ class MainWindow(QMainWindow):
                 new_plane_points = [
                     point,
                     (point[0] + v1[0], point[1] + v1[1], point[2] + v1[2]),  # Смещение вдоль v1
-                    (point[0] + v2[0], point[1] + v2[1], point[2] + v2[2])  # Смещение вдоль v2
+                    (point[0] + v2[0], point[1] + v2[1], point[2] + v2[2]),  # Смещение вдоль v2
                 ]
 
                 # Добавляем плоскость в движок
                 sorted_points = self.sort_points(new_plane_points)
                 self.engine.add_plane(f"{self.engine.space_data['props_index']}", sorted_points, color)
-                #self.opengl.data_space_reload(self.engine.get_space())
+                # self.opengl.data_space_reload(self.engine.get_space())
                 self.update_opengl_widget()
         except Exception as e:
             print(f"Ошибка при рисовании плоскости: {e}")
@@ -515,7 +488,7 @@ class MainWindow(QMainWindow):
         for key, element in POLY.items():
             print(f"{self.engine.space_data['props_index']}", element["points"], element["color"])
             self.engine.add_plane(f"{self.engine.space_data['props_index']}", element["points"], element["color"])
-        #self.opengl.data_space_reload(self.engine.get_space())
+        # self.opengl.data_space_reload(self.engine.get_space())
         self.update_opengl_widget()
 
     def load_space_from_file(self) -> None:
@@ -524,11 +497,7 @@ class MainWindow(QMainWindow):
         """
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getOpenFileName(
-            self,
-            "Выберите файл сохранения",
-            "saves/",
-            "JSON Files (*.json);;All Files (*)",
-            options=options
+            self, "Выберите файл сохранения", "saves/", "JSON Files (*.json);;All Files (*)", options=options
         )
         if file_name:
             self.engine.load_space(file_path=file_name)
@@ -554,7 +523,7 @@ class MainWindow(QMainWindow):
                 rotation_z = old_widget.rotation_z
                 last_mouse_pos = old_widget.last_mouse_pos
                 mouse_pressed = old_widget.mouse_pressed
-                old_widget.deleteLater()
+                old_widget.deleteLater()  # type: ignore
 
             # Создаем новый OpenGL-виджет с загруженным пространством
             renderer = OpenGLWidget(
@@ -564,7 +533,7 @@ class MainWindow(QMainWindow):
                 rotation_y=rotation_y,
                 rotation_z=rotation_z,
                 last_mouse_pos=last_mouse_pos,
-                mouse_pressed=mouse_pressed
+                mouse_pressed=mouse_pressed,
             )
             self.keyboard_handler.set_opengl_widget(renderer)
             self.setCentralWidget(renderer)
@@ -587,6 +556,7 @@ class MainWindow(QMainWindow):
         self.remove_main_menu()  # Удаляем верхнее меню
         self.setup_main_buttons()  # Восстанавливаем главное меню с большими кнопками
         print("Возвращение в главное меню.")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -1,28 +1,32 @@
-from typing import Any
+# from typing import Any
+#
+# from OpenGL.GL import (
+#     GL_COLOR_BUFFER_BIT,
+#     GL_DEPTH_BUFFER_BIT,
+#     GL_DEPTH_TEST,
+#     GL_MODELVIEW,
+#     GL_PROJECTION,
+#     GL_QUADS,
+#     glBegin,
+#     glClear,
+#     glClearColor,
+#     glColor3f,
+#     glEnable,
+#     glEnd,
+#     glLoadIdentity,
+#     glMatrixMode,
+#     glTranslatef,
+#     glVertex3f,
+#     glViewport,
+# )
+# from OpenGL.GLU import gluPerspective
+# from PyQt5.QtWidgets import QOpenGLWidget, QWidget
 
-from OpenGL.GL import (
-    GL_COLOR_BUFFER_BIT,
-    GL_DEPTH_BUFFER_BIT,
-    GL_DEPTH_TEST,
-    GL_MODELVIEW,
-    GL_PROJECTION,
-    GL_QUADS,
-    glBegin,
-    glClear,
-    glClearColor,
-    glColor3f,
-    glEnable,
-    glEnd,
-    glLoadIdentity,
-    glMatrixMode,
-    glTranslatef,
-    glVertex3f,
-    glViewport,
-)
-from OpenGL.GLU import gluPerspective
-from PyQt5.QtWidgets import QOpenGLWidget, QWidget
-class Renderer():
+
+class Renderer:
     pass
+
+
 #
 #
 # class Renderer(QOpenGLWidget):

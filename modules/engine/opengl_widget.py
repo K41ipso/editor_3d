@@ -1,12 +1,13 @@
-from typing import Any, Tuple
+from typing import Any
+
 from OpenGL.GL import (
     GL_COLOR_BUFFER_BIT,
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_TEST,
+    GL_LINES,
     GL_MODELVIEW,
     GL_PROJECTION,
     GL_TRIANGLES,
-    GL_LINES,
     glBegin,
     glClear,
     glClearColor,
@@ -15,14 +16,14 @@ from OpenGL.GL import (
     glEnd,
     glLoadIdentity,
     glMatrixMode,
+    glRotatef,
     glTranslatef,
     glVertex3f,
     glViewport,
-    glRotatef
 )
 from OpenGL.GLU import gluPerspective
-from PyQt5.QtWidgets import QOpenGLWidget
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QOpenGLWidget
 
 
 class OpenGLWidget(QOpenGLWidget):
@@ -35,7 +36,7 @@ class OpenGLWidget(QOpenGLWidget):
         rotation_y: float = 0.0,
         rotation_z: float = 0.0,
         last_mouse_pos: Any = None,
-        mouse_pressed: bool = False
+        mouse_pressed: bool = False,
     ) -> None:
         super().__init__(parent)
         self.space_data = space_data
@@ -58,7 +59,7 @@ class OpenGLWidget(QOpenGLWidget):
         glMatrixMode(GL_MODELVIEW)
 
     def paintGL(self) -> None:
-        #print(f"Отрисовка: {self.space_data}")
+        # print(f"Отрисовка: {self.space_data}")
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()

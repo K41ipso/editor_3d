@@ -1,7 +1,9 @@
-from typing import Any
 import datetime
-from modules.engine.core import Engine
+from typing import Any
+
 from modules.actions.continues import continue_last_session
+from modules.engine.core import Engine
+
 
 def create_new_space(MainWindow: Any) -> None:
     """
@@ -21,7 +23,3 @@ def create_new_space(MainWindow: Any) -> None:
 
     # Загружаем последнее сохранение
     continue_last_session(MainWindow)
-
-# Example usage
-if __name__ == "__main__":
-    create_new_space()

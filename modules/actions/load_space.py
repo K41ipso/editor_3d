@@ -1,8 +1,8 @@
 from typing import Any
 
-from modules.engine.core import Engine
+from PyQt5.QtWidgets import QFileDialog  # type: ignore
+
 from modules.engine.opengl_widget import OpenGLWidget
-from PyQt5.QtWidgets import QFileDialog
 
 
 def load_saved_space(main_window: Any = None) -> None:
@@ -18,7 +18,7 @@ def load_saved_space(main_window: Any = None) -> None:
             "Выберите файл сохранения",
             "saves/",  # Директория по умолчанию
             "JSON Files (*.json);;All Files (*)",  # Фильтр файлов
-            options=options
+            options=options,
         )
 
         if not file_path:
@@ -50,10 +50,7 @@ def load_saved_space(main_window: Any = None) -> None:
 
         # Заменяем главное меню на OpenGL-виджет
         print("Инициализация OpenGL...")
-        opengl_widget = OpenGLWidget(
-            main_window.engine.get_space(),
-            keyboard_handler=main_window.keyboard_handler
-        )
+        opengl_widget = OpenGLWidget(main_window.engine.get_space(), keyboard_handler=main_window.keyboard_handler)
         print("OpenGL инициализирован.")
         main_window.setCentralWidget(opengl_widget)
         print('setCentralWidget закончил свою работу.')
