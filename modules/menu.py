@@ -1,6 +1,7 @@
 import math
 import os
 import sys
+import datetime
 from functools import partial
 from typing import Any, List, Tuple
 
@@ -26,6 +27,7 @@ from modules.input_handler.keyboard import KeyboardHandler
 from modules.tools.const import POLY
 from modules.tools.input_dialog import PointsInputDialog
 from modules.tools.modal_dialogs import PointParallelInputDialog, PointSegmentInputDialog
+from modules.tools.screenshot_notification import ScreenshotNotification
 
 
 class MainWindow(QMainWindow):
@@ -37,7 +39,11 @@ class MainWindow(QMainWindow):
         # Инициализация обработчика клавиатуры
         self.keyboard_handler = KeyboardHandler(main_window=self)
 
+        # Для состояния скриншотов
+        self.screenshot_notification = None
+
         # Привязка клавиш
+        self.keyboard_handler.bind_key("M", self.screenshot)
         self.keyboard_handler.bind_key("W", self.keyboard_handler.move_forward)
         self.keyboard_handler.bind_key("A", self.keyboard_handler.move_left)
         self.keyboard_handler.bind_key("S", self.keyboard_handler.move_backward)
@@ -45,6 +51,7 @@ class MainWindow(QMainWindow):
         self.keyboard_handler.bind_key("Q", self.keyboard_handler.move_up)
         self.keyboard_handler.bind_key("E", self.keyboard_handler.move_down)
         self.keyboard_handler.bind_key("Z", lambda: self.close())
+        self.keyboard_handler.bind_key("Ь", self.screenshot)
         self.keyboard_handler.bind_key("Ц", self.keyboard_handler.move_forward)
         self.keyboard_handler.bind_key("Ф", self.keyboard_handler.move_left)
         self.keyboard_handler.bind_key("Ы", self.keyboard_handler.move_backward)
@@ -556,6 +563,58 @@ class MainWindow(QMainWindow):
         self.remove_main_menu()  # Удаляем верхнее меню
         self.setup_main_buttons()  # Восстанавливаем главное меню с большими кнопками
         print("Возвращение в главное меню.")
+
+    def screenshot(self) -> None:
+        """
+        Делает скриншот текущей сцены и сохраняет его в resources/screenshots.
+        """
+        # Воспроизводим звук затвора
+        play_sound_effect("screen_sound.mp3")
+
+        # Уведомление пользователю
+        self.show_screenshot_notification()
+
+        # Получаем текущий центральный виджет
+        widget = self.centralWidget()
+        if widget is None:
+            print("Нет виджета для скриншота.")
+            return
+
+        # Получаем изображение с виджета (QOpenGLWidget поддерживает grabFramebuffer)
+        try:
+            # Для OpenGLWidget используем grabFramebuffer
+            if hasattr(widget, "grabFramebuffer"):
+                image = widget.grabFramebuffer()
+            else:
+                # Для других виджетов используем grab()
+                image = widget.grab()
+        except Exception as e:
+            print(f"Ошибка при получении изображения: {e}")
+            return
+
+        # Формируем имя файла
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"screenshot_{timestamp}.png"
+        screenshots_dir = os.path.join(os.path.dirname(__file__), "..", "resources", "screenshots")
+        os.makedirs(screenshots_dir, exist_ok=True)
+        filepath = os.path.join(screenshots_dir, filename)
+
+        # Сохраняем изображение
+        try:
+            image.save(filepath)
+            print(f"Скриншот сохранён: {filepath}")
+        except Exception as e:
+            print(f"Ошибка при сохранении скриншота: {e}")
+
+    def show_screenshot_notification(self):
+        if self.screenshot_notification and self.screenshot_notification.isVisible():
+            self.screenshot_notification.timer.stop()
+            self.screenshot_notification.setWindowOpacity(1.0)
+            self.screenshot_notification.timer.start(2000)
+            self.screenshot_notification.raise_()
+        else:
+            self.screenshot_notification = ScreenshotNotification(parent=self)
+            self.screenshot_notification.show_notification(self)
 
 
 if __name__ == "__main__":
